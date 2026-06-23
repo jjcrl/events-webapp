@@ -10,34 +10,19 @@ const requireAuth = async (req, res, next) => {
     return res.status(401).json({ error: 'Not authenticated' })
   }
   
+  // ensure a UserProfile exists for this user
+  let profile = await UserProfile.findOne({ authUserId: session.user.id })
+  if (!profile) {
+    profile = await UserProfile.create({ 
+      authUserId: session.user.id,
+      savedEvents: [],
+      favouriteArtists: []
+    })
+  }
+  
   req.user = session.user
-  req.session = session.session
+  req.profile = profile
   next()
 }
-
-// you could put this in your requireAuth middleware
-// const requireAuth = async (req, res, next) => {
-//   const session = await auth.api.getSession({
-//     headers: fromNodeHeaders(req.headers)
-//   })
-  
-//   if (!session) {
-//     return res.status(401).json({ error: 'Not authenticated' })
-//   }
-  
-//   // ensure a UserProfile exists for this user
-//   let profile = await UserProfile.findOne({ authUserId: session.user.id })
-//   if (!profile) {
-//     profile = await UserProfile.create({ 
-//       authUserId: session.user.id,
-//       savedEvents: [],
-//       favouriteArtists: []
-//     })
-//   }
-  
-//   req.user = session.user
-//   req.profile = profile
-//   next()
-// }
 
 module.exports = requireAuth
