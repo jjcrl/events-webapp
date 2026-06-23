@@ -1,10 +1,24 @@
-const mongoose = require("mongoose");
+const mongoose = require("mongoose")
 
-const UserSchema = new mongoose.Schema({
-  email: { type: String, required: true },
-  password: { type: String, required: true },
-});
+const UserProfileSchema = new mongoose.Schema({
+  authUserId: { 
+    type: String, 
+    required: true, 
+    unique: true, 
+    index: true 
+  },
+  favouriteArtists: { type: [String], default: [] },
+  homeLocation: {
+    city: String,
+    coordinates: {
+      type: { type: String, enum: ["Point"] },
+      coordinates: [Number]
+    }
+  }
+}, {
+  timestamps: true
+})
 
-const User = mongoose.model("User", UserSchema);
+const UserProfile = mongoose.model("UserProfile", UserProfileSchema)
 
-module.exports = User;
+module.exports = UserProfile
