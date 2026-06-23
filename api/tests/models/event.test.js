@@ -54,3 +54,46 @@ describe("Event model", () => {
         });    
     });
 });
+
+// fails without name / artist / city / genre / date (in one describe block)
+describe("required field validation", () => {
+    test("fails wihtout name", async () => {
+        const event = new Event(validEvent({ name: undefined }));
+        // Expecting the promise to be rejected and throw an error:
+        // name: checks the word "name" is in the error
+        // .*: means any characters in between
+        // required: checks that the word "required" is in the message
+        // /i: makes the search case-insensitive
+        await expect(event.save()).rejects.toThrow(/name.*required/i);
+    });
+
+    test("fails without artist", async () => {
+        const event = new Event(validEvent({ artist: undefined }));
+        await expect(event.save()).rejects.toThrow(/artist.*required/i);
+    });
+    
+    test("fails without city", async () => {
+        const event = new Event(validEvent({ city: undefined }));
+        await expect(event.save()).rejects.toThrow(/city.*required/i);
+    });
+    
+    test("fails without genre", async () => {
+        const event = new Event(validEvent({ genre: undefined }));
+        await expect(event.save()).rejects.toThrow(/genre.*required/i);
+    });
+
+    test("fails without date", async () => {
+        const event = new Event(validEvent({ date: undefined }));
+        await expect(event.save()).rejects.toThrow(/date.*required/i);
+    });
+});
+
+// test ticketmaster id is unique
+describe("ticketmasterId uniqueness", () => {
+    test("rejects a duplicate ticketmasterId", async () => {
+        const sharedId = "tm-duplicate-123";
+        await new Event(validEvent({ ticketmasterId: sharedId })).save();
+        const duplicate = new Event(validEvent({ name: "Another Event", ticketmasterId: sharedId }));
+        await expect(duplicate.save()).rejects.toThrow(/duplicate key/i);
+    });
+});

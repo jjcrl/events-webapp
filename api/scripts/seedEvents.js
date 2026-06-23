@@ -14,5 +14,3 @@ const seedEvents = async () => {
 
 seedEvents().catch(console.error)
 
-// write seed data once you can access api?
-
