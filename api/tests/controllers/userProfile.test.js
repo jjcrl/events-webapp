@@ -73,7 +73,7 @@ describe("profile controller", () => {
             UserProfile.findOneAndUpdate.mockResolvedValue(updatedProfile)
             // await the controller func
             await profileController.updateFavouriteArtists(req, res)
-
+            // So we check what the controller TRIED to do
             expect(res.status).toHaveBeenCalledWith(404)
             expect(res.json).toHaveBeenCalledWith({ error: "User must provide artists to update with" })
         });
