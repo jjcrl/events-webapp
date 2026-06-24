@@ -27,32 +27,33 @@ const getEvents = async (req, res) => {
             if (to) filter.date.$lte = new Date(to);
         }
         //chronological sorting ascending
-        const events = (await Event.find(filter)).toSorted({ date: 1 });
+        const events = await Event.find(filter).sort({ date: 1 });
 
         res.status(200).json({ events });
-    }   catch (err) {
+    } catch (err) {
         console.error("getEvents error:", err);
         res.status(500).json({ error: "Failed to fetch events" });
     }
 };
 
+// GET /events/:id
+// Returns a signle event by its MongoDB _id
+const getEventById = async (req, res) => {
+    try {
+        const event = await Event.findById(req.params.id);
+        
+        if (!event) {
+            return res.status(404).json({ error: "Event not found" });
+        }
+        res.status(200).json({ events: event });
+    } catch (err) {
+        console.error("getEventById error:", err);
+        // Mongoose throws a CastError (meaning failed to convert/cast a value) if the id string is not a valid ObjectId
+        if (err.name === "CastError") {
+            return res.status(400).json({ error: "Invalid event ID" });
+        }
+        res.status(500).json({ error: "Failed to fetch event" });
+    }
+};
 
-
-
-
-
-// Ticketmaster mapping to the events controller
-
-
-// const events = data._embedded.events.map(event => ({
-//   name: event.name,
-//   artist: event._embedded?.attractions?.[0]?.name || event.name,
-//   genre: event._embedded?.attractions?.[0]?.classifications?.[0]?.genre?.name || "Other",
-//   date: event.dates?.start?.localDate,
-//   time: event.dates?.start?.localTime,
-//   city: event._embedded?.venues?.[0]?.city?.name,
-//   venue: event._embedded?.venues?.[0]?.name,
-//   imageUrl: event.images?.[0]?.url,
-//   ticketUrl: event.url,
-//   ticketmasterId: event.id,
-// }))
+module.exports = { getEvents, getEventById }
