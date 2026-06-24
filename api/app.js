@@ -4,6 +4,8 @@ const cors = require('cors')
 const { toNodeHandler } = require('better-auth/node')
 const { auth } = require('./lib/auth')
 
+const userProfileRouter = require('./routes/userProfile')
+
 const app = express()
 
 // CORS — must allow credentials so cookies work
