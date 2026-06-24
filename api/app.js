@@ -4,6 +4,8 @@ const cors = require('cors');
 const { toNodeHandler } = require('better-auth/node');
 const { auth } = require('./lib/auth');
 
+const userProfileRouter = require('./routes/userProfile')
+
 const eventsRouter = require("./routes/events");
 
 const app = express();
@@ -27,6 +29,9 @@ app.use("/events", eventsRouter);
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
+
+// API routes
+app.use('/profile', userProfileRouter)
 
 // 404 handler
 app.use((_req, res) => {
