@@ -25,6 +25,9 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' })
 })
 
+// API routes
+app.use('/profile', userProfileRouter)
+
 // 404 handler
 app.use((_req, res) => {
   res.status(404).json({ err: 'Error 404: Not Found' })

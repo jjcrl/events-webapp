@@ -5,7 +5,7 @@ export async function getMyProfile() {
         credentials: "include"
     }
 
-    const response = await fetch(`${BACKEND_URL}/me`, requestOptions)
+    const response = await fetch(`${BACKEND_URL}/profile/me`, requestOptions)
 
     if (response.status !== 200) {
         throw new Error("Unable to fetch user's profile");

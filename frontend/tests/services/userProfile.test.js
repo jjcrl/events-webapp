@@ -15,7 +15,7 @@ describe("userProfile services", () => {
             await getMyProfile();
 
             const [url, options] = fetch.mock.lastCall;
-            expect(url).toEqual(`${BACKEND_URL}/me`);
+            expect(url).toEqual(`${BACKEND_URL}/profile/me`);
             expect(options.method).toEqual("GET");
             expect(options.credentials).toEqual("include");
         });
