@@ -1,42 +1,47 @@
-require('dotenv').config()
-const express = require('express')
-const cors = require('cors')
-const { toNodeHandler } = require('better-auth/node')
-const { auth } = require('./lib/auth')
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const { toNodeHandler } = require('better-auth/node');
+const { auth } = require('./lib/auth');
 
 const userProfileRouter = require('./routes/userProfile')
 
-const app = express()
+const eventsRouter = require("./routes/events");
+
+const app = express();
 
 // CORS — must allow credentials so cookies work
 app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true
-}))
+}));
 
 // better-auth handler — MUST come before express.json()
-app.all('/api/auth/*', toNodeHandler(auth))
+app.all('/api/auth/*', toNodeHandler(auth));
 
 // JSON parser for everything else
-app.use(express.json())
+app.use(express.json());
+
+// Application routes
+app.use("/events", eventsRouter);
 
 // Health check route so we can test the server is up
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok' })
-})
+  res.json({ status: 'ok' });
+});
 
 // API routes
 app.use('/profile', userProfileRouter)
 
 // 404 handler
 app.use((_req, res) => {
-  res.status(404).json({ err: 'Error 404: Not Found' })
-})
+  res.status(404).json({ err: 'Error 404: Not Found' });
+});
 
-// Error handler
+// 500 Error handler
 app.use((err, _req, res, _next) => {
   console.error(err)
-  res.status(500).json({ err: 'Something went wrong' })
-})
+  res.status(500).json({ err: 'Something went wrong' });
+});
 
-module.exports = app
+module.exports = app;
