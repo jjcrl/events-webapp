@@ -6,6 +6,7 @@ const profileController = require("../../controllers/userProfile")
 describe("profile controller", () => {
     let req, res
 
+    // set up req and res for mocking http calls
     beforeEach(() => {
         req = {
             user: { id: "user-123" },
@@ -23,20 +24,26 @@ describe("profile controller", () => {
     })
     describe("getMyProfile", () => {
         test("returns the user's profile", async () => {
+            // set up the profile
             const fakeProfile = {
                 authUserId: "user-123",
                 favouriteArtists: ["Idles"]
             }
-            //1. Program the scenario — "the DB has this profile for this user"
+            //1. Program the scenario — method findOne , result should = fakeProfile
             UserProfile.findOne.mockResolvedValue(fakeProfile)
+
             // 2. Run the controller
             await profileController.getMyProfile(req, res)
+            
             // 3. Assert what happened
+
+            //expect it was called with an authUserId
             expect(UserProfile.findOne).toHaveBeenCalledWith({ authUserId: "user-123" })
+            //expect the response (res), to return the profile we asked for 
             expect(res.json).toHaveBeenCalledWith({ profile: fakeProfile })
         })
         test('should return 404 if no user profile is found', async () => {
-            //1. Program the scenario — "the DB has this profile for this user"
+            //1. Program the scenario — method fineOne -> given no authUserId to find with
             UserProfile.findOne.mockResolvedValue(null)
             // 2. Run the controller
             await profileController.getMyProfile(req, res)
@@ -52,11 +59,15 @@ describe("profile controller", () => {
                 authUserId: "user-123",
                 favouriteArtists: ["Idles", "Beyonce"]
             }
-            //1. Program the scenario — "the DB has this profile for this user"
+            //1. Program the scenario — method findOneAndUpdate -> should return the updated profile
             UserProfile.findOneAndUpdate.mockResolvedValue(updatedProfile)
             // set up req body for what the update will be.
             req.body = { artists: ['Idles', 'Beyonce'] }
+          
+            //2. run the controller 
             await profileController.updateFavouriteArtists(req, res)
+          
+            //verify the controller behaivour
             expect(UserProfile.findOneAndUpdate).toHaveBeenCalledWith(
                 { authUserId: "user-123" },
                 { favouriteArtists: ["Idles", "Beyonce"] },
