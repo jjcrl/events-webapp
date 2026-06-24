@@ -16,7 +16,6 @@ const requireAuth = async (req, res, next) => {
   if (!profile) {
     profile = await UserProfile.create({
       authUserId: session.user.id,
-      favouriteArtists: []
     })
   }
   

@@ -6,8 +6,7 @@ export function HomePage() {
   return (
     <div className="home">
       <h1>Welcome to Acebook!</h1>
-      <Link to="/signup">Sign Up</Link>
-      <Link to="/login">Log In</Link>
+      <Link to="/login">Log In/sign up</Link>
     </div>
   );
 }

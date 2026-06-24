@@ -1,14 +1,15 @@
 import { useNavigate } from "react-router-dom";
+import { authClient } from "../services/authentication"
 
 function LogoutButton() {
   const navigate = useNavigate();
 
-  function logOut() {
-    localStorage.removeItem("token");
-    navigate("/");
+  const handleLogout = async () => {
+    await authClient.signOut()
+    navigate("/login")
   }
 
-  return <button onClick={logOut}>Log out</button>;
+  return <button onClick={handleLogout}>Log out</button>;
 }
 
 export default LogoutButton;
