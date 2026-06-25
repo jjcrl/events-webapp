@@ -16,27 +16,29 @@ const getMyProfile = async (req, res) => {
     }
 }
 
-const updateFavouriteArtists = async (req, res) => {
+const toggleFavouriteArtists = async (req, res) => {
     try {
         // take artists of req body
-        const { artists } = req.body
+        const { artist } = req.body
 
         // if no artists provided
-        if (!artists) {
-            return res.status(400).json({ error: "User must provide artists to update with" })
+        if (!artist) {
+            return res.status(400).json({ error: "Artist is required" })
         }
+        
+        //1. find the current profile
+        const profile = await UserProfile.findOne({ authUserId: req.user.id })
 
-        // args for api func
-        const profile = await UserProfile.findOneAndUpdate(
-            //1. filter -> what does it need to find 
+        const isFollowing = profile.favouriteArtists.includes(artist)
+
+        const updatedProfile = await UserProfile.findOneAndUpdate(
             { authUserId: req.user.id },
-            //2. what does it need to update?
-            { favouriteArtists: artists },
-            // options -> return new profile not old one. 
+            // If already following, remove artist ($pull). If not following, add artist ($addToSet) 
+            // $pull & $addToSet are MongoDB operators
+            isFollowing ? { $pull: {favouriteArtists: artist}} : { $addToSet: {favouriteArtists: artist}},
             { new: true }
-        )
-        // return the found and updated profile
-        return res.json({ profile })
+        )        
+        return res.json({ profile: updatedProfile })
     } catch (error) {
         console.error(error)
         return res.status(500).json({ error: "Something went wrong" })
@@ -62,4 +64,4 @@ const updateLocation = async (req, res) => {
     }
 }
 
-module.exports = { updateLocation, getMyProfile, updateFavouriteArtists }
+module.exports = { updateLocation, getMyProfile, toggleFavouriteArtists }

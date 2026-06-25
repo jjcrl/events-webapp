@@ -53,43 +53,69 @@ describe("profile controller", () => {
             expect(res.json).toHaveBeenCalledWith({ error: "User's profile not found" })
         });
     })
-    describe('updateFavouriteArtist', () => {
-        test('should update the favourite artist array', async () => {
-            const updatedProfile = {
-                authUserId: "user-123",
-                favouriteArtists: ["Idles", "Beyonce"]
-            }
-            //1. Program the scenario — method findOneAndUpdate -> should return the updated profile
-            UserProfile.findOneAndUpdate.mockResolvedValue(updatedProfile)
-            // set up req body for what the update will be.
-            req.body = { artists: ['Idles', 'Beyonce'] }
-          
-            //2. run the controller 
-            await profileController.updateFavouriteArtists(req, res)
-          
-            //verify the controller behaivour
-            expect(UserProfile.findOneAndUpdate).toHaveBeenCalledWith(
-                { authUserId: "user-123" },
-                { favouriteArtists: ["Idles", "Beyonce"] },
-                { new: true })
-            // Verify the controller responded with the updated profile
-            expect(res.json).toHaveBeenCalledWith({ profile: updatedProfile })
-        });
-        test('should return 404 if no nartists are given to update', async () => {
-            const updatedProfile = {
-                authUserId: "user-123",
-                favouriteArtists: ["Idles", "Beyonce"]
-            }
-            //1. Program the scenario — "the DB has this profile for this user"
-            UserProfile.findOneAndUpdate.mockResolvedValue(updatedProfile)
-            // await the controller func
-            await profileController.updateFavouriteArtists(req, res)
-            // So we check what the controller TRIED to do
-            expect(res.status).toHaveBeenCalledWith(404)
-            expect(res.json).toHaveBeenCalledWith({ error: "User must provide artists to update with" })
-        });
-    });
+    
+    describe('toggleFavouriteArtists', () => {
+    test('adds artist to favourites if not already following', async () => {
+        const existingProfile = {
+            authUserId: "user-123",
+            favouriteArtists: ["Beyonce"] // Idles not in here
+        }
+        const updatedProfile = {
+            authUserId: "user-123",
+            favouriteArtists: ["Beyonce", "Idles"] // Idles added
+        }
 
+        // mock findOne to return existing profile
+        UserProfile.findOne.mockResolvedValue(existingProfile)
+        // mock findOneAndUpdate to return updated profile
+        UserProfile.findOneAndUpdate.mockResolvedValue(updatedProfile)
+
+        req.body = { artist: "Idles" }
+
+        await profileController.toggleFavouriteArtists(req, res)
+
+        expect(UserProfile.findOneAndUpdate).toHaveBeenCalledWith(
+            { authUserId: "user-123" },
+            { $addToSet: { favouriteArtists: "Idles" } },
+            { new: true }
+        )
+        expect(res.json).toHaveBeenCalledWith({ profile: updatedProfile })
+    })
+
+    test('removes artist from favourites if already following', async () => {
+        const existingProfile = {
+            authUserId: "user-123",
+            favouriteArtists: ["Beyonce", "Idles"] // Idles already in here
+        }
+        const updatedProfile = {
+            authUserId: "user-123",
+            favouriteArtists: ["Beyonce"] // Idles removed
+        }
+
+        UserProfile.findOne.mockResolvedValue(existingProfile)
+        UserProfile.findOneAndUpdate.mockResolvedValue(updatedProfile)
+
+        req.body = { artist: "Idles" }
+
+        await profileController.toggleFavouriteArtists(req, res)
+
+        expect(UserProfile.findOneAndUpdate).toHaveBeenCalledWith(
+            { authUserId: "user-123" },
+            { $pull: { favouriteArtists: "Idles" } },
+            { new: true }
+        )
+        expect(res.json).toHaveBeenCalledWith({ profile: updatedProfile })
+    })
+
+    test('returns 400 if no artist provided', async () => {
+        req.body = {}
+
+        await profileController.toggleFavouriteArtists(req, res)
+
+        expect(res.status).toHaveBeenCalledWith(400)
+        expect(res.json).toHaveBeenCalledWith({ error: "Artist is required" })
+    })
+})
     describe('updateLocation', () => {
         test('should update the homeLocation object', async () => {
             //updated profile for testing
@@ -138,7 +164,7 @@ describe("profile controller", () => {
             // Verify the controller responded with the updated profile
             expect(res.json).toHaveBeenCalledWith({ profile: updatedProfile })
         });
-        test('should return a 404 if the user does not provide a location to update', async () => {
+        test('should return a 400 if the user does not provide a location to update', async () => {
             //updated profile for testing
             const updatedProfile = {
                 authUserId: "user-123",
@@ -150,8 +176,12 @@ describe("profile controller", () => {
             }
             UserProfile.findOneAndUpdate.mockResolvedValue(updatedProfile)
             await profileController.updateLocation(req, res)
-            expect(res.status).toHaveBeenCalledWith(404)
+            expect(res.status).toHaveBeenCalledWith(400)
             expect(res.json).toHaveBeenCalledWith({ error: "User must provide a new location" })
         });
     });
 })
+
+// updated the error tests for location and favourites - should return a 400 not 404
+// 400 is a bad request - client sent something wrong or missing (location/artist)
+// 404 is not found - the thing being looked for doesn't exist (location/artist) 
