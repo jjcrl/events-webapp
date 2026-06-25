@@ -7,6 +7,6 @@ const router = express.Router();
 
 router.get("/me", requireAuth, userProfileController.getMyProfile);
 router.put("/me/location", requireAuth, userProfileController.updateLocation);
-router.put("/me/favourite-artists", requireAuth, userProfileController.updateFavouriteArtists);
+router.put("/me/favourite-artists", requireAuth, userProfileController.toggleFavouriteArtists);
 
 module.exports = router;
