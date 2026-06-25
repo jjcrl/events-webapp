@@ -11,11 +11,10 @@ export const getEvents = async (filters = {}) => {
         const response = await fetch(`${BACKEND_URL}/events?${params}`, {
             credentials: "include"
         })
-
         if (!response.ok) {
-            throw new Error("Failed to fetch events")
+            const data = await response.json().catch(() => ({}))
+            throw new Error(data.error || `Failed to fetch events (${response.status})`)
         }
-
         return response.json()
     } catch (err) {
         console.error("getEvents error:", err)
