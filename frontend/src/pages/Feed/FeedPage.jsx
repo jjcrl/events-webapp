@@ -17,7 +17,7 @@ export function FeedPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    getEvents()
+    getEvents({ city: "Manchester" })
       .then((data) => setEvents(data.events))
       .catch((err) => setError(err))
       .finally(() => setLoading(false))
