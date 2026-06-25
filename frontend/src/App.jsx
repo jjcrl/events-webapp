@@ -5,6 +5,8 @@ import { HomePage } from "./pages/Home/HomePage";
 import { LoginPage } from "./pages/Login/LoginPage";
 import { FeedPage } from "./pages/Feed/FeedPage";
 import { ProfilePage } from "./pages/Profile/ProfilePage";
+import ProtectedRoute from "./components/ProtectedRoute"
+
 
 // docs: https://reactrouter.com/en/main/start/overview
 const router = createBrowserRouter([
@@ -22,7 +24,10 @@ const router = createBrowserRouter([
   },
   {
     path: "/profile",
-    element: <ProfilePage />,
+    element:
+      <ProtectedRoute>
+        <ProfilePage />
+      </ProtectedRoute>
   },
 ]);
 

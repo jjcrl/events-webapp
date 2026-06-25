@@ -1,21 +1,13 @@
-// frontend/src/components/ProtectedRoute.jsx
 import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { authClient } from "../services/authentication"
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, fallback = null }) => {
   const { data: session, isPending } = authClient.useSession()
   const navigate = useNavigate()
 
-  useEffect(() => {
-    if (!isPending && !session) {
-      navigate("/login")
-    }
-  }, [session, isPending])
-
-  if (isPending) return <p>Loading...</p>
-  if (!session) return null
-
+  if (isPending) return fallback; 
+  if (!session) return <Navigate to="/login" replace />;
   return children
 }
 
