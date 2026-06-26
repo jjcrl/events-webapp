@@ -20,18 +20,18 @@ export default function EventCard({ event, favouriteArtists = [], setFavouriteAr
     // check if this event's artist is already followed
     const isFollowing = favouriteArtists.includes(event.artist)
 
-    function handleClick() {
+    function handleCardClick() {
         navigate(`/events/${event._id}`);
     }
 
     return (
         <div
             className ="event-card"
-            onClick={handleClick}
+            onClick={handleCardClick}
             // Allow users to interact
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => e.key === "Enter" && handleClick()}
+            onKeyDown={(e) => e.key === "Enter" && handleCardClick()}
             data-testid="event-card"
         >
             {event.imageUrl && (
