@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 
 import {
-  getEventById,
-  getPurchaseLink
+  getEventById
 } from "../../services/events";
 
 import { authClient } from "../../services/authentication";
@@ -25,20 +24,20 @@ export function EventPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  const handleBuyTickets = async () => {
-    if (!session) {
-      navigate("/login");
-      return;
-    }
+  // const handleBuyTickets = async () => {
+  //   if (!session) {
+  //     navigate("/login");
+  //     return;
+  //   }
 
-    try {
-      const data = await getPurchaseLink(id);
+  //   try {
+  //     const data = await getPurchaseLink(id);
 
-      window.location.href = data.ticketUrl;
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  //     window.location.href = data.ticketUrl;
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // };
 
   if (loading) return <p>Loading...</p>;
 
@@ -60,10 +59,11 @@ export function EventPage() {
         once the backend field becomes available without crashing the page in the meantime.
       */}
       {event.description && <p className="event-description">{event.description}</p>}
-
-      <button onClick={handleBuyTickets}>
+      {event.ticketUrl}
+      <Link>{event.ticketUrl}</Link>
+      {/* <button onClick={handleBuyTickets}>
         Buy Tickets
-      </button>
+      </button> */}
     </>
   );
 }

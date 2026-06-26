@@ -11,7 +11,7 @@ export function FeedPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [favouriteArtists, setFavouriteArtists] = useState([])
-
+  const {data:session} = authClient.useSession();
   const [cityFilter, setCityFilter] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -33,8 +33,6 @@ export function FeedPage() {
   
   if (loading) return <p>Loading events...</p>
   if (error) return <p>Something went wrong</p>
-  
-res.json({ profile }) // → { profile: { favouriteArtists: [...] } }
 
   return (
     <>

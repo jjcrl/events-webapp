@@ -18,7 +18,7 @@ export async function getMyProfile() {
     }
 }
 
-export async function toggleFavouriteArtists() {
+export async function toggleFavouriteArtists(artist) {
     try {
         const requestOptions = {
             method: "PUT",
@@ -26,7 +26,7 @@ export async function toggleFavouriteArtists() {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ artist })
+            body: JSON.stringify({artist})
         }
         const response = await fetch(`${BACKEND_URL}/profile/me/favourite-artists`, requestOptions)
         if (response.status !== 200) {
