@@ -13,6 +13,7 @@ export function FeedPage() {
   const [events, setEvents] = useState([]);
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [savedEvents, setSavedEvents] = useState([]);
   const [eventsError, setEventsError] = useState(null);
   const [favouriteArtists, setFavouriteArtists] = useState([]);
   const { data: session } = authClient.useSession();
@@ -54,10 +55,21 @@ function updateParam(key, value) {
   useEffect(() => {
     if (session?.user) {
       getMyProfile()
-        .then(({ profile }) => setFavouriteArtists(profile.favouriteArtists))
-        .catch((err) => console.error("Profile fetch failed:", err));
+        .then(({ profile }) => {
+          setFavouriteArtists(profile.favouriteArtists);
+          setSavedEvents(profile.savedEvents);
+        })
+        .catch((err) => setError(err));
     }
   }, [session]);
+
+  function handleSavedToggled(eventId) {
+    setSavedEvents((prev) =>
+      prev.includes(eventId)
+        ? prev.filter((id) => id !== eventId)
+        : [...prev, eventId]
+    );
+  }
 
     const topTags = useMemo(()=>{
       const counts= {}
@@ -148,12 +160,12 @@ function updateParam(key, value) {
         ))}
       </section>
 
-      <EventFeed
-        events={filteredEvents}
       <Recommendations favouriteArtists={favouriteArtists} events={events} />
       <EventFeed
-        events={events}
+        events={filteredEvents}
         favouriteArtists={favouriteArtists}
+        savedEvents={savedEvents}
+        onSavedToggled={handleSavedToggled}
       />
     </>
   );
