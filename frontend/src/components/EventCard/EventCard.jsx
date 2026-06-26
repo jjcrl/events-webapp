@@ -16,7 +16,7 @@ export default function EventCard({ event, favouriteArtists = [] }) {
     const { data: session } = authClient.useSession()
 
     if (!event) return null;
-    
+
     // check if this event's artist is already followed
     const isFollowing = favouriteArtists.includes(event.artist)
 
@@ -26,7 +26,7 @@ export default function EventCard({ event, favouriteArtists = [] }) {
 
     return (
         <div
-            className ="event-card"
+            className="event-card"
             onClick={handleClick}
             // Allow users to interact
             role="button"
@@ -34,18 +34,21 @@ export default function EventCard({ event, favouriteArtists = [] }) {
             onKeyDown={(e) => e.key === "Enter" && handleClick()}
             data-testid="event-card"
         >
-            {event.imageUrl && (
+            {event.images && (
                 <img
-                    src={event.imageUrl}
+                    style={{height:"200px", width:"auto"}}
+                    src={event.images[0].url}
                     alt={`${event.name} image`}
                     className="event-image"
-            />
+                />
             )}
 
             <div className="event_body">
                 <h2 className="event_title">{event.name}</h2>
                 <p className="event_artist">{event.artist}</p>
-                <p className="event_genre">{event.genre}</p>
+                {event.tags.map((tag) => (
+                    <p>{tag}</p>
+                ))}
                 <p className="event_datetime">
                     {formatDate(event.date)}
                     {event.time && `· ${event.time}`}
@@ -67,7 +70,7 @@ export default function EventCard({ event, favouriteArtists = [] }) {
                     {isFollowing ? "Following" : "Follow"}
                 </button>
 
-            {/* {event.ticketUrl && (
+                {/* {event.ticketUrl && (
             <a
                 href={event.ticketUrl}
                 target="_blank"
@@ -75,7 +78,7 @@ export default function EventCard({ event, favouriteArtists = [] }) {
             >
                 Buy Tickets
             </a> */}
+            </div>
         </div>
-    </div>    
-);
+    );
 }
