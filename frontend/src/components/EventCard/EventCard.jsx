@@ -34,9 +34,10 @@ export default function EventCard({ event, favouriteArtists = [] }) {
             onKeyDown={(e) => e.key === "Enter" && handleClick()}
             data-testid="event-card"
         >
-            {event.imageUrl && (
+            {event.images && (
                 <img
-                    src={event.imageUrl}
+                    style={{height:"200px", width:"auto"}}
+                    src={event.images[0].url}
                     alt={`${event.name} image`}
                     className="event-image"
                 />
