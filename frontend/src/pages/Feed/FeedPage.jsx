@@ -4,7 +4,7 @@ import { authClient } from "../../services/authentication";
 import { getEvents, getCities } from "../../services/events";
 import { getMyProfile } from "../../services/userProfile";
 import EventFeed from "../../components/EventFeed";
-import LogoutButton from "../../components/LogoutButton";
+import NavBar from "../../components/NavBar";
 import Recommendations from "../../components/Recommendations";
 
 export function FeedPage() {
@@ -108,6 +108,7 @@ function updateParam(key, value) {
 
   return (
     <>
+      <NavBar />
       <h2>Events!</h2>
       {eventsError && <p>Something went wrong loading events.</p>}
       <LogoutButton />
@@ -164,6 +165,7 @@ function updateParam(key, value) {
       <EventFeed
         events={filteredEvents}
         favouriteArtists={favouriteArtists}
+        setFavouriteArtists={setFavouriteArtists}
         savedEvents={savedEvents}
         onSavedToggled={handleSavedToggled}
       />

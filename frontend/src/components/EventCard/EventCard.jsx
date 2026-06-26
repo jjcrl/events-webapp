@@ -11,7 +11,7 @@ function formatDate(dateString) {
     });
 }
 
-export default function EventCard({ event, favouriteArtists = [], savedEvents = [], onSavedToggled }) {
+export default function EventCard({ event, favouriteArtists = [], setFavouriteArtists, savedEvents = [], onSavedToggled }) {
     const navigate = useNavigate();
     const { data: session } = authClient.useSession();
 
@@ -67,6 +67,19 @@ export default function EventCard({ event, favouriteArtists = [], savedEvents = 
                     {event.venue ? `${event.venue}, ` : ""}
                     {event.city}
                 </p>
+                <button
+                    onClick={async (e) => {
+                        e.stopPropagation()
+                        if (!session) {
+                            navigate("/login")
+                        } else {
+                            const newFavouriteArtists = await toggleFavouriteArtists(event.artist)
+                            setFavouriteArtists(newFavouriteArtists)
+                        }
+                    }}
+                >
+                    {isFollowing ? "Following" : "Follow"}
+                </button>
 
                 <div className="event_actions">
                     {/* Save event to favourites */}

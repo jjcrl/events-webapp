@@ -33,7 +33,8 @@ export async function toggleFavouriteArtists(artist) {
             throw new Error("Unable to toggle favourite artist");
         }
         const data = await response.json();
-        return data;
+        const newFavouriteArtists = data.profile.favouriteArtists
+        return newFavouriteArtists;
     } catch (err) {
         console.error(err)
     }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getMyProfile } from "../../services/userProfile";
 import { authClient } from "../../services/authentication";
 import { useNavigate } from "react-router-dom";
+import NavBar from "../../components/NavBar";
 
 export function ProfilePage() {
     const [profile, setProfile] = useState(null)
@@ -23,6 +24,7 @@ export function ProfilePage() {
 
     return (
         <div>
+            <NavBar />
             <h1> Profile</h1>
             {profile &&
                 <div>
