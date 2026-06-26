@@ -10,8 +10,9 @@ export function FeedPage() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [favouriteArtists, setFavouriteArtists] = useState([])
-  const {data:session} = authClient.useSession();
+  const [favouriteArtists, setFavouriteArtists] = useState([]);
+  const [savedEvents, setSavedEvents] = useState([]);
+  const { data: session } = authClient.useSession();
   const [cityFilter, setCityFilter] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -22,25 +23,38 @@ export function FeedPage() {
     getEvents({ city: "Manchester" })
       .then((data) => setEvents(data.events))
       .catch((err) => setError(err))
-      .finally(() => setLoading(false))
-    
+      .finally(() => setLoading(false));
+
     if (session?.user) {
       getMyProfile()
-        .then(({ profile }) => setFavouriteArtists(profile.favouriteArtists))
-        .catch((err) => setError(err))
-    } 
-  }, [session])
-  
-  if (loading) return <p>Loading events...</p>
-  if (error) return <p>Something went wrong</p>
+        .then(({ profile }) => {
+          setFavouriteArtists(profile.favouriteArtists);
+          setSavedEvents(profile.savedEvents);
+        })
+        .catch((err) => setError(err));
+    }
+  }, [session]);
+
+  function handleSavedToggled(eventId) {
+    setSavedEvents((prev) =>
+      prev.includes(eventId)
+        ? prev.filter((id) => id !== eventId)
+        : [...prev, eventId]
+    );
+  }
+
+  if (loading) return <p>Loading events...</p>;
+  if (error) return <p>Something went wrong</p>;
 
   return (
     <>
       <h2>Events!</h2>
       <LogoutButton />
-      <EventFeed 
+      <EventFeed
         events={events}
         favouriteArtists={favouriteArtists}
+        savedEvents={savedEvents}
+        onSavedToggled={handleSavedToggled}
       />
     </>
   );
