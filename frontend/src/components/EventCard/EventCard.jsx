@@ -11,6 +11,11 @@ function formatDate(dateString) {
     });
 }
 
+function formatTime(timeString) {
+    if (!timeString) return "";
+    return timeString.slice(0, 5); // takes "19:00" from "19:00:00"
+}
+
 export default function EventCard({ event, favouriteArtists = [], setFavouriteArtists = () => {}, savedEvents = [], onSavedToggled }) {
     const navigate = useNavigate();
     const { data: session } = authClient.useSession();
@@ -34,6 +39,8 @@ export default function EventCard({ event, favouriteArtists = [], setFavouriteAr
         await toggleSavedEvent(event._id);
         if (onSavedToggled) onSavedToggled(event._id);
     }
+    
+    // console.log(event.tags)
 
     return (
         <div
@@ -61,11 +68,13 @@ export default function EventCard({ event, favouriteArtists = [], setFavouriteAr
                 ))}
                 <p className="event_datetime">
                     {formatDate(event.date)}
-                    {event.time && `· ${event.time}`}
+                    {/* {event.time && `· ${event.time}`} */}
+                    {event.time && ` ${formatTime(event.time)}`}
                 </p>
                 <p className="event_location">
-                    {event.venue ? `${event.venue}, ` : ""}
+                    {event.venue.name ? `${event.venue.name}, ` : ""}
                     {event.city}
+
                 </p>
 
                 <div className="event_actions">
