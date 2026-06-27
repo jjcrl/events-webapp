@@ -159,7 +159,12 @@ function updateParam(key, value) {
         ))}
       </section>
 
-      <Recommendations favouriteArtists={favouriteArtists} events={events} />
+      <Recommendations 
+        favouriteArtists={favouriteArtists} 
+        setFavouriteArtists={setFavouriteArtists}  // ← is this there?
+        savedEvents={savedEvents}
+        onSavedToggled={handleSavedToggled}
+        events={events} />
       <EventFeed
         events={filteredEvents}
         favouriteArtists={favouriteArtists}

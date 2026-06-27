@@ -11,7 +11,7 @@ function formatDate(dateString) {
     });
 }
 
-export default function EventCard({ event, favouriteArtists = [], setFavouriteArtists, savedEvents = [], onSavedToggled }) {
+export default function EventCard({ event, favouriteArtists = [], setFavouriteArtists = () => {}, savedEvents = [], onSavedToggled }) {
     const navigate = useNavigate();
     const { data: session } = authClient.useSession();
 
@@ -67,19 +67,6 @@ export default function EventCard({ event, favouriteArtists = [], setFavouriteAr
                     {event.venue ? `${event.venue}, ` : ""}
                     {event.city}
                 </p>
-                <button
-                    onClick={async (e) => {
-                        e.stopPropagation()
-                        if (!session) {
-                            navigate("/login")
-                        } else {
-                            const newFavouriteArtists = await toggleFavouriteArtists(event.artist)
-                            setFavouriteArtists(newFavouriteArtists)
-                        }
-                    }}
-                >
-                    {isFollowing ? "Following" : "Follow"}
-                </button>
 
                 <div className="event_actions">
                     {/* Save event to favourites */}
@@ -97,12 +84,16 @@ export default function EventCard({ event, favouriteArtists = [], setFavouriteAr
                     <button
                         className="follow-artist-btn"
                         data-testid="follow-artist-btn"
-                        onClick={(e) => {
+                        onClick={async (e) => {
                             e.stopPropagation();
                             if (!session) {
                                 navigate("/login");
                             } else {
-                                toggleFavouriteArtists(event.artist);
+                                // toggleFavouriteArtists(event.artist);
+                                const newFavouriteArtists = await toggleFavouriteArtists(event.artist)
+                                // setFavouriteArtists(newFavouriteArtists)
+                                if (setFavouriteArtists) setFavouriteArtists(newFavouriteArtists)
+
                             }
                         }}
                     >
