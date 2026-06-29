@@ -171,12 +171,6 @@ export function FeedPage() {
         <Map events={events} height={"400px"}  width={"100%"} zoom={12}/>
       }
 
-      <Recommendations
-        favouriteArtists={favouriteArtists}
-        setFavouriteArtists={setFavouriteArtists}  // ← is this there?
-        savedEvents={savedEvents}
-        onSavedToggled={handleSavedToggled}
-        events={events} />
       <EventFeed
         events={filteredEvents}
         favouriteArtists={favouriteArtists}
