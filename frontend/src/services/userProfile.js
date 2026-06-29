@@ -37,6 +37,7 @@ export async function toggleFavouriteArtists(artist) {
         return newFavouriteArtists;
     } catch (err) {
         console.error(err)
+        throw err
     }
 }
 
@@ -60,6 +61,23 @@ export async function toggleSavedEvent(eventId) {
     }
 }
 
+
+export async function updateHomeLocation({ city, lat, long }) {
+    try {
+        const requestOptions = {
+            method: "PUT",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                homeLocation: { city, lat, long }
+            })
+        }
+        const response = await fetch(`${BACKEND_URL}/profile/me/location`, requestOptions)
+        const data = await response.json()
+        if (response.status !== 200) {
+            throw new Error("Unable to update your home location")
+        }
+        return data.profile.homeLocation.city
 /**
  * Records a booking for the given event.
  * Returns the updated profile on success.
