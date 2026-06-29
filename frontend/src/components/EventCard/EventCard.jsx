@@ -11,7 +11,12 @@ function formatDate(dateString) {
     });
 }
 
-export default function EventCard({ event, favouriteArtists = [], setFavouriteArtists, savedEvents = [], onSavedToggled }) {
+function formatTime(timeString) {
+    if (!timeString) return "";
+    return timeString.slice(0, 5); // takes "19:00" from "19:00:00"
+}
+
+export default function EventCard({ event, favouriteArtists = [], setFavouriteArtists = () => {}, savedEvents = [], onSavedToggled }) {
     const navigate = useNavigate();
     const { data: session } = authClient.useSession();
 
@@ -34,6 +39,8 @@ export default function EventCard({ event, favouriteArtists = [], setFavouriteAr
         await toggleSavedEvent(event._id);
         if (onSavedToggled) onSavedToggled(event._id);
     }
+    
+    // console.log(event.tags)
 
     return (
         <div
@@ -61,25 +68,14 @@ export default function EventCard({ event, favouriteArtists = [], setFavouriteAr
                 ))}
                 <p className="event_datetime">
                     {formatDate(event.date)}
-                    {event.time && `· ${event.time}`}
+                    {/* {event.time && `· ${event.time}`} */}
+                    {event.time && ` ${formatTime(event.time)}`}
                 </p>
                 <p className="event_location">
-                    {event.venue ? `${event.venue}, ` : ""}
+                    {event.venue.name ? `${event.venue.name}, ` : ""}
                     {event.city}
+
                 </p>
-                <button
-                    onClick={async (e) => {
-                        e.stopPropagation()
-                        if (!session) {
-                            navigate("/login")
-                        } else {
-                            const newFavouriteArtists = await toggleFavouriteArtists(event.artist)
-                            setFavouriteArtists(newFavouriteArtists)
-                        }
-                    }}
-                >
-                    {isFollowing ? "Following" : "Follow"}
-                </button>
 
                 <div className="event_actions">
                     {/* Save event to favourites */}
@@ -97,12 +93,16 @@ export default function EventCard({ event, favouriteArtists = [], setFavouriteAr
                     <button
                         className="follow-artist-btn"
                         data-testid="follow-artist-btn"
-                        onClick={(e) => {
+                        onClick={async (e) => {
                             e.stopPropagation();
                             if (!session) {
                                 navigate("/login");
                             } else {
-                                toggleFavouriteArtists(event.artist);
+                                // toggleFavouriteArtists(event.artist);
+                                const newFavouriteArtists = await toggleFavouriteArtists(event.artist)
+                                // setFavouriteArtists(newFavouriteArtists)
+                                if (setFavouriteArtists) setFavouriteArtists(newFavouriteArtists)
+
                             }
                         }}
                     >

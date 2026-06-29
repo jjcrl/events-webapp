@@ -111,8 +111,6 @@ function updateParam(key, value) {
       <NavBar />
       <h2>Events!</h2>
       {eventsError && <p>Something went wrong loading events.</p>}
-      <LogoutButton />
-
       <section>
         <label>
           City:
@@ -161,7 +159,12 @@ function updateParam(key, value) {
         ))}
       </section>
 
-      <Recommendations favouriteArtists={favouriteArtists} events={events} />
+      <Recommendations 
+        favouriteArtists={favouriteArtists} 
+        setFavouriteArtists={setFavouriteArtists}  // ← is this there?
+        savedEvents={savedEvents}
+        onSavedToggled={handleSavedToggled}
+        events={events} />
       <EventFeed
         events={filteredEvents}
         favouriteArtists={favouriteArtists}
