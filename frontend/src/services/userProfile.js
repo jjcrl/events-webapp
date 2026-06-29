@@ -40,6 +40,10 @@ export async function toggleFavouriteArtists(artist) {
     }
 }
 
+/**
+ * Toggle save/unsave for an event.
+ * Returns the updated profile (including the new saved events array of objects)
+ */
 export async function toggleSavedEvent(eventId) {
     try {
         const requestOptions = {
@@ -57,6 +61,26 @@ export async function toggleSavedEvent(eventId) {
     } catch (err) {
         console.error(err)
         throw err
+    }
+}
+
+/**
+ * Fetch the current user's saved event snapshots.
+ * Returns { savedEvents: [{ eventId, name, artist, date, city, venue, image, tags, isPast }] }
+ */
+export async function getSavedEvents() {
+    try {
+        const response = await fetch(`${BACKEND_URL}/profile/me/saved-events`, {
+            method: "GET",
+            credentials: "include",
+        });
+        if (response.status !== 200) {
+            throw new Error("Unable to fetch saved events");
+        }
+        return response.json();
+    } catch (err) {
+        console.error(err);
+        throw err;
     }
 }
 
@@ -90,8 +114,8 @@ export async function addBooking(eventId) {
 }
 
 /**
- * Fetches booking details for display on the profile page.
- * Returns { bookings: [{ _id, name, artist, venue, date, time, isPast }] }
+ * Fetches booking details for display, including image, on the profile page.
+ * Returns { bookings: [{ _id, name, artist, venue, city, date, time, image, tags, isPast }] }
  */
 export async function getMyBookings() {
     try {

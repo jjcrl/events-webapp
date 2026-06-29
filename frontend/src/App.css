@@ -54,11 +54,21 @@
 }
 
 .recoms {
-  display: flex;
-  flex-direction: row;
-  width: 100vw;
-  height: fit-content;
-  justify-content: center;
+  width: 100%;
+  text-align: center;
+}
+
+.recoms h2 {
+  margin-bottom: 1rem;
+}
+
+.recommended-events {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(220px, 1fr));
+  gap: 2rem;
+  width: 100%;
+  max-width: 1800px;
+  margin: 0 auto;
 }
 
 .hero {

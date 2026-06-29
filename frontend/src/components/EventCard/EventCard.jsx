@@ -13,7 +13,10 @@ function formatDate(dateString) {
 
 function formatTime(timeString) {
     if (!timeString) return "";
-    return timeString.slice(0, 5); // takes "19:00" from "19:00:00"
+    if (timeString.split(":").length === 3) {
+        return timeString;
+    }
+    return `${timeString}:00`;
 }
 
 export default function EventCard({ event, favouriteArtists = [], setFavouriteArtists = () => { }, savedEvents = [], onSavedToggled }) {
@@ -24,7 +27,10 @@ export default function EventCard({ event, favouriteArtists = [], setFavouriteAr
 
     // check if this event's artist is already followed
     const isFollowing = favouriteArtists.includes(event.artist);
-    const isSaved = savedEvents.includes(event._id);
+    const isSaved = savedEvents.some(
+        (saved) =>
+            (typeof saved === "object" ? saved.eventId : saved) === event._id
+    );
 
     function handleCardClick() {
         navigate(`/events/${event._id}`);
