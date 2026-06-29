@@ -19,7 +19,8 @@ export function FeedPage() {
   const [favouriteArtists, setFavouriteArtists] = useState([]);
   const { data: session } = authClient.useSession();
 
-  const city = searchParams.get("city") || cities[0] || "Manchester";
+  const DEFAULT_CITY = "Manchester"
+  const city = searchParams.get("city") || cities[0] || DEFAULT_CITY;
   const from = searchParams.get("from") || "";
   const to = searchParams.get("to") || "";
   const tag = searchParams.get("tag") || "";
