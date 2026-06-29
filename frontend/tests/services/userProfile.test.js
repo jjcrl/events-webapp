@@ -1,11 +1,15 @@
 import createFetchMock from "vitest-fetch-mock";
 import { describe, vi, expect, test } from "vitest";
-import { getMyProfile, toggleSavedEvent } from "../../src/services/userProfile";
+import { getMyProfile, toggleSavedEvent, addBooking, getMyBookings } from "../../src/services/userProfile";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 createFetchMock(vi).enableMocks();
 
 describe("userProfile services", () => {
+    beforeEach(() => {
+        fetch.resetMocks();
+    });
+
     describe("getMyProfile", () => {
         test("fetches /me with credentials", async () => {
             fetch.mockResponseOnce(
@@ -83,6 +87,78 @@ describe("userProfile services", () => {
             );
 
             await expect(toggleSavedEvent("event-abc")).rejects.toThrow("Unable to toggle saved event");
+        });
+    });
+
+    describe("addBooking", () => {
+        test("sends POST to /profile/me/bookings with eventId", async () => {
+            fetch.mockResponseOnce(
+                JSON.stringify({ profile: { bookings: ["event-abc"] } }),
+                { status: 201 }
+            );
+ 
+            await addBooking("event-abc");
+ 
+            const [url, options] = fetch.mock.lastCall;
+            expect(url).toEqual(`${BACKEND_URL}/profile/me/bookings`);
+            expect(options.method).toEqual("POST");
+            expect(options.credentials).toEqual("include");
+            expect(JSON.parse(options.body)).toEqual({ eventId: "event-abc" });
+        });
+ 
+        test("returns updated profile data on 201", async () => {
+            const mockResponse = { profile: { bookings: ["event-abc"] } };
+            fetch.mockResponseOnce(JSON.stringify(mockResponse), { status: 201 });
+            const result = await addBooking("event-abc");
+            expect(result).toEqual(mockResponse);
+        });
+ 
+        test("throws 'already_booked' error on 409", async () => {
+            fetch.mockResponseOnce(
+                JSON.stringify({ error: "Event already booked" }),
+                { status: 409 }
+            );
+            await expect(addBooking("event-abc")).rejects.toThrow("already_booked");
+        });
+ 
+        test("throws generic error on other failure status", async () => {
+            fetch.mockResponseOnce(JSON.stringify({ error: "Server error" }), { status: 500 });
+            await expect(addBooking("event-abc")).rejects.toThrow("Unable to add booking");
+        });
+    });
+  
+    describe("getMyBookings", () => {
+        test("sends GET to /profile/me/bookings with credentials", async () => {
+            fetch.mockResponseOnce(JSON.stringify({ bookings: [] }), { status: 200 });
+            await getMyBookings();
+            const [url, options] = fetch.mock.lastCall;
+            expect(url).toEqual(`${BACKEND_URL}/profile/me/bookings`);
+            expect(options.method).toEqual("GET");
+            expect(options.credentials).toEqual("include");
+        });
+ 
+        test("returns enriched bookings on 200", async () => {
+            const mockResponse = {
+                bookings: [
+                    {
+                        _id: "event-abc",
+                        name: "Test Show",
+                        artist: "Test Artist",
+                        venue: "O2 Arena",
+                        date: "2026-08-01T19:00:00.000Z",
+                        time: "19:00",
+                        isPast: false
+                    }
+                ]
+            };
+            fetch.mockResponseOnce(JSON.stringify(mockResponse), { status: 200 });
+            const result = await getMyBookings();
+            expect(result).toEqual(mockResponse);
+        });
+ 
+        test("throws error when status not 200", async () => {
+            fetch.mockResponseOnce(JSON.stringify({ error: "Not found" }), { status: 404 });
+            await expect(getMyBookings()).rejects.toThrow("Unable to fetch bookings");
         });
     });
 });

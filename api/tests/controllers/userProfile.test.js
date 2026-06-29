@@ -1,6 +1,8 @@
 jest.mock("../../models/userProfile")
+jest.mock("../../models/event")
 
 const UserProfile = require("../../models/userProfile")
+const Event = require("../../models/event")
 const profileController = require("../../controllers/userProfile")
 
 describe("profile controller", () => {
@@ -21,7 +23,9 @@ describe("profile controller", () => {
         // Reset all mock methods before each test
         UserProfile.findOne.mockReset?.()
         UserProfile.findOneAndUpdate.mockReset?.()
+        Event.find?.mockReset?.()
     })
+
     describe("getMyProfile", () => {
         test("returns the user's profile", async () => {
             // set up the profile
@@ -238,8 +242,132 @@ describe("profile controller", () => {
             expect(res.json).toHaveBeenCalledWith({ error: "User must provide a new location" })
         });
     });
-})
 
-// updated the error tests for location and favourites - should return a 400 not 404
-// 400 is a bad request - client sent something wrong or missing (location/artist)
-// 404 is not found - the thing being looked for doesn't exist (location/artist) 
+    describe("addBooking", () => {
+        test("adds event to bookings and returns 201 with updated profile", async () => {
+            const existingProfile = { authUserId: "user-123", bookings: [] }
+            const updatedProfile  = { authUserId: "user-123", bookings: ["event-abc"] }
+ 
+            UserProfile.findOne.mockResolvedValue(existingProfile)
+            UserProfile.findOneAndUpdate.mockResolvedValue(updatedProfile)
+            req.body = { eventId: "event-abc" }
+ 
+            await profileController.addBooking(req, res)
+ 
+            expect(UserProfile.findOneAndUpdate).toHaveBeenCalledWith(
+                { authUserId: "user-123" },
+                { $addToSet: { bookings: "event-abc" } },
+                { new: true }
+            )
+            expect(res.status).toHaveBeenCalledWith(201)
+            expect(res.json).toHaveBeenCalledWith({ profile: updatedProfile })
+        })
+ 
+        test("returns 409 if event is already booked", async () => {
+            const existingProfile = { authUserId: "user-123", bookings: ["event-abc"] }
+            UserProfile.findOne.mockResolvedValue(existingProfile)
+            req.body = { eventId: "event-abc" }
+ 
+            await profileController.addBooking(req, res)
+ 
+            expect(res.status).toHaveBeenCalledWith(409)
+            expect(res.json).toHaveBeenCalledWith({ error: "Event already booked" })
+            expect(UserProfile.findOneAndUpdate).not.toHaveBeenCalled()
+        })
+ 
+        test("returns 400 if no eventId provided", async () => {
+            req.body = {}
+            await profileController.addBooking(req, res)
+            expect(res.status).toHaveBeenCalledWith(400)
+            expect(res.json).toHaveBeenCalledWith({ error: "Event ID is required" })
+        })
+ 
+        test("returns 404 if profile not found", async () => {
+            UserProfile.findOne.mockResolvedValue(null)
+            req.body = { eventId: "event-abc" }
+            await profileController.addBooking(req, res)
+            expect(res.status).toHaveBeenCalledWith(404)
+            expect(res.json).toHaveBeenCalledWith({ error: "User's profile not found" })
+        })
+    })
+  
+    describe("getMyBookings", () => {
+        const futureDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30) // 30 days ahead
+        const pastDate   = new Date(Date.now() - 1000 * 60 * 60 * 24 * 30) // 30 days ago
+ 
+        test("returns booking details", async () => {
+            const profile = { authUserId: "user-123", bookings: ["event-abc"] }
+            const fakeEvents = [
+                {
+                    _id: { toString: () => "event-abc" },
+                    name: "Test Show",
+                    artist: "Test Artist",
+                    venue: { name: "O2 Arena" },
+                    date: futureDate,
+                    time: "19:00",
+                }
+            ]
+ 
+            UserProfile.findOne.mockResolvedValue(profile)
+            Event.find = jest.fn().mockReturnValue({
+                select: jest.fn().mockResolvedValue(fakeEvents)
+            })
+ 
+            await profileController.getMyBookings(req, res)
+ 
+            expect(res.json).toHaveBeenCalledWith({
+                bookings: [
+                    {
+                        _id: fakeEvents[0]._id,
+                        name: "Test Show",
+                        artist: "Test Artist",
+                        venue: "O2 Arena",
+                        date: futureDate,
+                        time: "19:00",
+                        isPast: false,
+                    }
+                ]
+            })
+        })
+ 
+        test("returns empty array if no bookings", async () => {
+            const profile = { authUserId: "user-123", bookings: [] }
+            UserProfile.findOne.mockResolvedValue(profile)
+ 
+            await profileController.getMyBookings(req, res)
+ 
+            expect(res.json).toHaveBeenCalledWith({ bookings: [] })
+        })
+ 
+        test("marks past events with isPast: true", async () => {
+            const profile = { authUserId: "user-123", bookings: ["event-old"] }
+            const fakeEvents = [
+                {
+                    _id: { toString: () => "event-old" },
+                    name: "Old Show",
+                    artist: "Old Artist",
+                    venue: { name: "Brixton Academy" },
+                    date: pastDate,
+                    time: "20:00",
+                }
+            ]
+ 
+            UserProfile.findOne.mockResolvedValue(profile)
+            Event.find = jest.fn().mockReturnValue({
+                select: jest.fn().mockResolvedValue(fakeEvents)
+            })
+ 
+            await profileController.getMyBookings(req, res)
+ 
+            const result = res.json.mock.calls[0][0]
+            expect(result.bookings[0].isPast).toBe(true)
+        })
+ 
+        test("returns 404 if profile not found", async () => {
+            UserProfile.findOne.mockResolvedValue(null)
+            await profileController.getMyBookings(req, res)
+            expect(res.status).toHaveBeenCalledWith(404)
+            expect(res.json).toHaveBeenCalledWith({ error: "User's profile not found" })
+        })
+    })
+})

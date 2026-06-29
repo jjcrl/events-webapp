@@ -59,3 +59,54 @@ export async function toggleSavedEvent(eventId) {
         throw err
     }
 }
+
+/**
+ * Records a booking for the given event.
+ * Returns the updated profile on success.
+ * Throws if the event is already booked (409) or another error occurs.
+ */
+export async function addBooking(eventId) {
+    try {
+        const requestOptions = {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ eventId })
+        }
+        const response = await fetch(`${BACKEND_URL}/profile/me/bookings`, requestOptions)
+
+        if (response.status === 409) {
+            throw new Error("already_booked")
+        }
+        if (response.status !== 201) {
+            throw new Error("Unable to add booking");
+        }
+        const data = await response.json();
+        return data;
+    } catch (err) {
+        console.error(err)
+        throw err
+    }
+}
+
+/**
+ * Fetches booking details for display on the profile page.
+ * Returns { bookings: [{ _id, name, artist, venue, date, time, isPast }] }
+ */
+export async function getMyBookings() {
+    try {
+        const requestOptions = {
+            method: "GET",
+            credentials: "include"
+        }
+        const response = await fetch(`${BACKEND_URL}/profile/me/bookings`, requestOptions)
+        if (response.status !== 200) {
+            throw new Error("Unable to fetch bookings");
+        }
+        const data = await response.json();
+        return data;
+    } catch (err) {
+        console.error(err)
+        throw err
+    }
+}
