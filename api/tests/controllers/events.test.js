@@ -167,7 +167,7 @@ describe("getEventById", () => {
         await getEventById(req, res)
 
         expect(res.status).toHaveBeenCalledWith(200)
-        expect(res.json).toHaveBeenCalledWith({ events: fakeEvents[0] })
+        expect(res.json).toHaveBeenCalledWith({ event: fakeEvents[0] })
     })
 
     test("returns 404 when no event matches the id", async () => {

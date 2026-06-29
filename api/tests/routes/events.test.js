@@ -66,7 +66,7 @@ describe("GET /events (Public Endpoints)", () => {
                 .get(`/events/${savedEvent._id}`)
                 .expect(200);
 
-            expect(response.body.events.name).toBe("Single Show");
+            expect(response.body.event.name).toBe("Single Show");
         });
 
         test("should return 404 if the event ID does not exist", async () => {

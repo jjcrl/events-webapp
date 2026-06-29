@@ -22,7 +22,6 @@ export const getEvents = async (filters = {}) => {
     }
 }
 
-// checked with Maria - controller event matches + route
 export const getEventById = async (id) => {
     try {
         const response = await fetch(`${BACKEND_URL}/events/${id}`, {
@@ -51,3 +50,25 @@ export const getCities = async () => {
 
     return response.json();
 };
+
+/**
+ * Fetches the ticketUrl for a given event from the backend.
+ * Used by EventPage when the user clicks "Buy Tickets".
+ */
+export const getPurchaseLink = async (eventId) => {
+    try {
+        const response = await fetch(`${BACKEND_URL}/events/${eventId}`, {
+            credentials: "include"
+        })
+ 
+        if (!response.ok) {
+            throw new Error("Failed to fetch purchase link")
+        }
+ 
+        const data = await response.json()
+        return { ticketUrl: data.event?.ticketUrl }
+    } catch (err) {
+        console.error("getPurchaseLink error:", err)
+        throw err
+    }
+}

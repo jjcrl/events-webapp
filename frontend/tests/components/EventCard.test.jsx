@@ -4,7 +4,7 @@ import EventCard from "../../src/components/EventCard/EventCard";
 import { toggleSavedEvent } from "../../src/services/userProfile";
 import { authClient } from "../../src/services/authentication";
 
-// ─── Mocks ───────────────────────────────────────────────────────────────────
+// Mocks
 
 vi.mock("../../src/services/userProfile", () => ({
     toggleFavouriteArtists: vi.fn(),
@@ -26,28 +26,28 @@ vi.mock("react-router-dom", async () => {
     };
 });
 
-// ─── Test data ───────────────────────────────────────────────────────────────
+// Test data
 
 const event = {
     _id: "event-123",
     name: "Coldplay Live",
     artist: "Coldplay",
-    genre: "Britpop",
+    tags: ["Britpop"],
     date: "2026-08-01",
     time: "19:30",
     city: "Manchester",
-    venue: "A0 Arena",
-    imageUrl: "https://example.com/coldplay.jpg",
+    venue: { name: "A0 Arena" },
+    images: [{ url: "https://example.com/coldplay.jpg" }],
     ticketUrl: "https://ticketmaster.com/event/123",
 };
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// Helpers
 
 function renderCard(props = {}) {
     return render(<EventCard event={event} {...props} />);
 }
 
-// ─── Tests ───────────────────────────────────────────────────────────────────
+// Tests
 
 describe("EventCard", () => {
     beforeEach(() => {
@@ -71,8 +71,8 @@ describe("EventCard", () => {
         test("renders image when imageUrl exists", () => {
             renderCard();
 
-            const image = screen.getByRole("img", { name: /Coldplay Live/i });
-            expect(image.getAttribute("src")).toBe(event.imageUrl);
+            const image = screen.getByRole("img", { name: /Coldplay Live image/i });
+            expect(image.getAttribute("src")).toBe(event.images[0].url);
         });
 
         test("renders nothing if event is missing", () => {
@@ -143,14 +143,12 @@ describe("EventCard", () => {
     describe("follow artist button", () => {
         test("shows 'Follow' when artist is not in favouriteArtists", () => {
             renderCard({ favouriteArtists: [] });
-
             expect(screen.getByTestId("follow-artist-btn").textContent).toBe("Follow");
         });
 
         test("shows 'Following' when artist is in favouriteArtists", () => {
             renderCard({ favouriteArtists: ["Coldplay"] });
-
             expect(screen.getByTestId("follow-artist-btn").textContent).toBe("Following");
         });
     });
-});l
+});

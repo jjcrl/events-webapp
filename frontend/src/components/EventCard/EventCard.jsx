@@ -75,22 +75,19 @@ export default function EventCard({ event, favouriteArtists = [], setFavouriteAr
             )}
 
             <div className="event_body">
-                <p className="event_title">{event.name}</p>
-                {/* <p className="event_artist">{event.artist}</p> */}
-                {/* <div className="tags">
-                    {event.tags.map((tag) => (
-                        <span>{tag}</span>
-                    ))}
-                </div> */}
-
+                <h2 className="event_title">{event.name}</h2>
+                <p className="event_artist">{event.artist}</p>
+                {(event.tags || []).map((tag, index) => (
+                    <p key={index}>{tag}</p>
+                ))}
                 <p className="event_datetime">
                     {formatDate(event.date)}
                     {/* {event.time && `· ${event.time}`} */}
                     {event.time && ` ${formatTime(event.time)}`}
                 </p>
                 <p className="event_location">
-                    {event.venue.name ? `${event.venue.name} ` : ""}
-
+                    {event.venue?.name ? `${event.venue.name}, ` : ""}
+                    {event.city}
 
                 </p>
 

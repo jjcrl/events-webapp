@@ -25,6 +25,7 @@ jest.mock("../../lib/auth", () => ({
 
 const app = require("../../app");
 const userProfile = require("../../models/userProfile");
+const Event = require("../../models/event");
 const { auth } = require("../../lib/auth"); 
 
 require("../mongodb_helper");
@@ -42,8 +43,21 @@ function createFakeUserProfile(overrides = {}) {
     };
 }
 
+async function createFakeEvent(overrides = {}) {
+    return Event.create({
+        name: "Test Show",
+        artist: "Test Artist",
+        city: "London",
+        date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 days ahead
+        time: "19:00",
+        venue: { name: "O2 Arena" },
+        ...overrides,
+    });
+}
+
 beforeEach(async () => {
     await userProfile.deleteMany({});
+    await Event.deleteMany({});
 });
 
 describe("GET /profile/me", () => {
@@ -197,6 +211,89 @@ describe("PUT /profile/me/saved-events", () => {
         const response = await request(app)
             .put("/profile/me/saved-events")
             .send({ eventId: "event-abc" });
+ 
+        expect(response.status).toBe(401);
+        expect(response.body.error).toBe("Not authenticated");
+    });
+});
+
+describe("POST /profile/me/bookings", () => {
+    test("should add a booking and return 201 with updated bookings list", async () => {
+        await userProfile.create(createFakeUserProfile({ bookings: [] }));
+        const fakeEvent = await createFakeEvent();
+ 
+        const response = await request(app)
+            .post("/profile/me/bookings")
+            .send({ eventId: fakeEvent._id.toString() });
+ 
+        expect(response.status).toBe(201);
+        expect(response.body.profile.bookings).toContain(fakeEvent._id.toString());
+    });
+ 
+    test("should return 409 if event is already booked", async () => {
+        const fakeEvent = await createFakeEvent();
+        await userProfile.create(createFakeUserProfile({ bookings: [fakeEvent._id.toString()] }));
+ 
+        const response = await request(app)
+            .post("/profile/me/bookings")
+            .send({ eventId: fakeEvent._id.toString() });
+ 
+        expect(response.status).toBe(409);
+        expect(response.body.error).toBe("Event already booked");
+    });
+ 
+    test("should return 400 if eventId is missing", async () => {
+        await userProfile.create(createFakeUserProfile({ bookings: [] }));
+ 
+        const response = await request(app)
+            .post("/profile/me/bookings")
+            .send({});
+ 
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe("Event ID is required");
+    });
+ 
+    test("should return 401 if user is not authenticated", async () => {
+        auth.api.getSession.mockResolvedValueOnce(null);
+ 
+        const response = await request(app)
+            .post("/profile/me/bookings")
+            .send({ eventId: "some-event-id" });
+ 
+        expect(response.status).toBe(401);
+        expect(response.body.error).toBe("Not authenticated");
+    });
+});
+  
+describe("GET /profile/me/bookings", () => {
+    test("should return enriched booking details", async () => {
+        const fakeEvent = await createFakeEvent();
+        await userProfile.create(createFakeUserProfile({ bookings: [fakeEvent._id.toString()] }));
+ 
+        const response = await request(app).get("/profile/me/bookings");
+ 
+        expect(response.status).toBe(200);
+        expect(response.body.bookings).toHaveLength(1);
+        const booking = response.body.bookings[0];
+        expect(booking.artist).toBe("Test Artist");
+        expect(booking.venue).toBe("O2 Arena");
+        expect(booking.name).toBe("Test Show");
+        expect(booking.isPast).toBe(false);
+    });
+ 
+    test("should return empty array if no bookings", async () => {
+        await userProfile.create(createFakeUserProfile({ bookings: [] }));
+ 
+        const response = await request(app).get("/profile/me/bookings");
+ 
+        expect(response.status).toBe(200);
+        expect(response.body.bookings).toEqual([]);
+    });
+ 
+    test("should return 401 if user is not authenticated", async () => {
+        auth.api.getSession.mockResolvedValueOnce(null);
+ 
+        const response = await request(app).get("/profile/me/bookings");
  
         expect(response.status).toBe(401);
         expect(response.body.error).toBe("Not authenticated");
