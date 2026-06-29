@@ -6,6 +6,9 @@ import { getMyProfile } from "../../services/userProfile";
 import EventFeed from "../../components/EventFeed";
 import NavBar from "../../components/NavBar";
 import Recommendations from "../../components/Recommendations";
+import Map from "../../components/Map";
+
+import Footer from "../../components/Footer";
 
 export function FeedPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -16,7 +19,7 @@ export function FeedPage() {
   const [savedEvents, setSavedEvents] = useState([]);
   const [eventsError, setEventsError] = useState(null);
   const [favouriteArtists, setFavouriteArtists] = useState([]);
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
 
   const city = searchParams.get("city") || cities[0] || "Manchester";
   const from = searchParams.get("from") || "";
@@ -25,18 +28,15 @@ export function FeedPage() {
 
   function updateParam(key, value) {
     const nextParams = new URLSearchParams(searchParams);
-
     if (value) {
       nextParams.set(key, value);
     } else {
       nextParams.delete(key);
     }
-
     setSearchParams(nextParams);
   }
 
   useEffect(() => {
-
     getCities()
       .then((data) => setCities(data.cities))
       .catch((err) => console.error(err));
@@ -45,7 +45,6 @@ export function FeedPage() {
   useEffect(() => {
     setLoading(true);
     setEventsError(null);
-
     getEvents({ city })
       .then((data) => setEvents(data.events))
       .catch((err) => setEventsError(err))
@@ -53,7 +52,7 @@ export function FeedPage() {
   }, [city]);
 
   useEffect(() => {
-    if (session?.user) {
+    if (!isPending && session?.user) {
       getMyProfile()
         .then(({ profile }) => {
           setFavouriteArtists(profile.favouriteArtists);
@@ -61,14 +60,16 @@ export function FeedPage() {
         })
         .catch((err) => setError(err));
     }
-  }, [session]);
+  }, [session, isPending]);
 
   function handleSavedToggled(eventId) {
-    setSavedEvents((prev) =>
-      prev.includes(eventId)
-        ? prev.filter((id) => id !== eventId)
-        : [...prev, eventId]
-    );
+    if (session && !isPending) {
+      setSavedEvents((prev) =>
+        prev.includes(eventId)
+          ? prev.filter((id) => id !== eventId)
+          : [...prev, eventId]
+      );
+    }
   }
 
   const topTags = useMemo(() => {
@@ -166,6 +167,13 @@ export function FeedPage() {
         ))}
       </section>
 
+      <Map />
+      <Recommendations 
+        favouriteArtists={favouriteArtists} 
+        setFavouriteArtists={setFavouriteArtists} 
+        savedEvents={savedEvents}
+        onSavedToggled={handleSavedToggled}
+        events={events} />
       <EventFeed
         events={filteredEvents}
         favouriteArtists={favouriteArtists}
@@ -173,6 +181,7 @@ export function FeedPage() {
         savedEvents={savedEvents}
         onSavedToggled={handleSavedToggled}
       />
+      <Footer/>
     </>
   );
 }

@@ -18,7 +18,7 @@ function formatTime(timeString) {
 
 export default function EventCard({ event, favouriteArtists = [], setFavouriteArtists = () => { }, savedEvents = [], onSavedToggled }) {
     const navigate = useNavigate();
-    const { data: session } = authClient.useSession();
+    const { data: session, isPending } = authClient.useSession();
 
     if (!event) return null;
 
@@ -32,7 +32,7 @@ export default function EventCard({ event, favouriteArtists = [], setFavouriteAr
 
     async function handleSaveToFavourites(e) {
         e.stopPropagation(); // Handles the click on the button without triggering other click handlers
-        if (!session) {
+        if (!session && !isPending) {
             navigate("/login");
             return;
         }
