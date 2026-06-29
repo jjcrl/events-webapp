@@ -1,28 +1,45 @@
-import { GoogleMap, useJsApiLoader } from "@react-google-maps/api"
+import { GoogleMap, MarkerF, useJsApiLoader } from "@react-google-maps/api"
+import { useNavigate } from "react-router-dom"
 
-const containerStyle = {
-    width: "100%",
-    height: "400px"
-}
 
-const center = {
-    lat: 53.4808,
-    lng: -2.2426
-}
+function Map(props) {
 
-function Map() {
+    const navigate = useNavigate();
+    const containerStyle = {
+        width: props.width,
+        height: props.height
+    }
+
+    const center = {
+        lat: 53.4808,
+        lng: -2.2426
+    }
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY
     })
 
     if (!isLoaded) return <p>Loading map...</p>
 
+
+
+
     return (
         <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={center}
-        zoom={10}
-        />
+            mapContainerStyle={containerStyle}
+            center={props.centre || center}
+            zoom={props.zoom}
+        >
+            {props.events.filter((e) => e.venue?.location?.coordinates).map((e) => (
+                <MarkerF
+                    key={e._id}
+                    position={{
+                        lat: e.venue.location.coordinates[1],
+                        lng: e.venue.location.coordinates[0]
+                    }}
+                    onClick={(() => (navigate(`/events/${e._id}`)))}
+                />
+            ))}
+        </GoogleMap>
     )
 }
 
