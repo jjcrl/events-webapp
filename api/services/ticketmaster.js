@@ -24,6 +24,13 @@ const ensureEventsForCity = async (city) => {
         return { city, refreshed: false, reason: "fresh" }
     }
 
+    // Clean up past events for this city before fetching new ones
+    const deleted = await Event.deleteMany({
+        city,
+        date: { $lt: new Date() }
+    })
+    console.log(`Removed ${deleted.deletedCount} past events for ${city}`)
+
     // after conditional logic ^ means it IS stale or does not exisit 
     const result = await fetchAndStoreEventsForCity(city)
 
@@ -45,7 +52,7 @@ const fetchAndStoreEventsForCity = async (city) => {
         apikey: process.env.TICKETMASTER_API_KEY,
         city,
         sort: "date,asc",
-        size: "20",
+        size: "100",
         classificationName: "Music",
     })
 
@@ -104,10 +111,35 @@ const fetchAndStoreEventsForCity = async (city) => {
         }
     })
 
+    const UPSELL_KEYWORDS = [
+        "venue premium",
+        "ultimate bar package",
+        "official ticket and hotel",
+        "vip package",
+        "premium package",
+        "hospitality package",
+        "hotel",
+        "VIP"
+    ]
+
     // validate entries
-    const validEvents = eventDocs.filter(
-        (e) => e.name && e.artist && e.date && e.city
-    )
+    const validEvents = eventDocs.filter((e) => {
+        const passes = (
+            e.name &&
+            e.artist &&
+            e.date &&
+            e.city &&
+            e.artist !== "Everywhere at Once" &&
+            e.artist !== "Day Fever" &&
+            !e.name?.toLowerCase().startsWith("everywhere at once") &&
+            e.tags.some(tag => tag !== "Other") &&
+            !UPSELL_KEYWORDS.some(keyword => e.name.toLowerCase().includes(keyword))
+        )
+
+
+
+        return passes
+    })
 
     // check fot skipped 
     const skipped = eventDocs.length - validEvents.length
