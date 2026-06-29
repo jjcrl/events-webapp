@@ -104,7 +104,6 @@ export function ProfilePage() {
                     <p>Your name: {session.user.name}</p>
                 </div>
             )}
-            }
         <Footer/>
         </div>
     );
