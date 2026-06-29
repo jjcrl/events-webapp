@@ -1,7 +1,7 @@
 import React from 'react'
 import EventCard from './EventCard/EventCard'
 
-function Recommendations({ favouriteArtists, setFavouriteArtists, savedEvents, onSavedToggled, events }) {
+function Recommendations({ favouriteArtists, setFavouriteArtists, savedEvents, bookings = [], onSavedToggled, events }) {
 
     // genres from favourite artists
     const genresFromArtists = [...new Set(
@@ -29,9 +29,19 @@ function Recommendations({ favouriteArtists, setFavouriteArtists, savedEvents, o
         ...savedEventObjects.map(e => e.eventId),
         ...savedEvents.filter(e => typeof e === 'string'),
     ])
+    const bookingIds = new Set(bookings)
+
     const genresFromSavedFeed = [...new Set(
         events
             .filter(event => savedIds.has(event._id))
+            .map(event => event.tags?.[0])
+            .filter(Boolean)
+    )]
+
+    // genres from past purchases (bookings)
+    const genresFromBookings = [...new Set(
+        events
+            .filter(event => bookingIds.has(event._id))
             .map(event => event.tags?.[0])
             .filter(Boolean)
     )]
@@ -41,13 +51,15 @@ function Recommendations({ favouriteArtists, setFavouriteArtists, savedEvents, o
         ...genresFromArtists,
         ...genresFromSaved,
         ...genresFromSavedFeed,
+        ...genresFromBookings,
     ])]
 
     // Filter events by merged genres, excluding already-saved ones
     const recommendedEvents = allFavouriteGenres.length > 0
         ? events.filter(event =>
             allFavouriteGenres.includes(event.tags?.[0]) &&
-            !savedIds.has(event._id) // don't re-recommend what's already saved
+            !savedIds.has(event._id) && // don't re-recommend what's already saved
+            !bookingIds.has(event._id) // Exclude already-purchased events
           )
         : []
 
