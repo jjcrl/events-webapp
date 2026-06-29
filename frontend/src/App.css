@@ -3,3 +3,47 @@
   text-align: center;
 }
 
+
+
+.hero {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+  gap: 5vw;
+  align-items: center;
+  justify-content: center;
+}
+
+.left {
+  background-color: whitesmoke;
+  width: 40%;
+  height: 70%;
+}
+
+.right {
+  background-color: whitesmoke;
+  width: 40%;
+  height: 70%
+}
+
+.banner {
+  width: 100vw;
+  height: 40vh;
+  display: flex;
+  flex-direction: row;
+  gap: 5vw;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer {
+  display: flex;
+  flex-direction: row;
+  height: 30vh;
+  width: 100vw;
+  align-items: center;
+  justify-content: center;
+  background-color: whitesmoke;
+  gap: 50vw
+}
