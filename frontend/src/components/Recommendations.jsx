@@ -22,17 +22,13 @@ function Recommendations({ favouriteArtists, setFavouriteArtists, savedEvents, o
         : []
 
     return (
-        <div style={{ border: "solid 1px red" }}>
-            <p>recommendations</p>
-            {/* if there are reccomdations */}
+        <div className='recoms'>
             {recommendedEvents.length === 0 ? (
                 <p>Add favourite artists to see recommendations</p>
             ) : (
-                // get back 5 events to reccomend.
-                // recommendedEvents.slice(0, 5).map(event => <EventCard key={event._id} event={event} />)
                 recommendedEvents.slice(0, 5).map(event => (
-                    <EventCard 
-                        key={event._id} 
+                    <EventCard
+                        key={event._id}
                         event={event}
                         favouriteArtists={favouriteArtists}
                         setFavouriteArtists={setFavouriteArtists}
@@ -40,7 +36,7 @@ function Recommendations({ favouriteArtists, setFavouriteArtists, savedEvents, o
                         onSavedToggled={onSavedToggled}
                     />
                 ))
-            )} 
+            )}
         </div>
     )
 }

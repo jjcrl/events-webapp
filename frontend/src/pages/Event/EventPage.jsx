@@ -3,6 +3,10 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { getEventById, getPurchaseLink } from "../../services/events";
 import { addBooking } from "../../services/userProfile";
 import { authClient } from "../../services/authentication";
+import Footer from "../../components/Footer";
+import NavBar from "../../components/NavBar";
+
+import Map from "../../components/Map"
 
 export function EventPage() {
   const { id } = useParams();
@@ -131,6 +135,7 @@ export function EventPage() {
         </div>
       )}
 
+    <NavBar/>
       <h1>{event.name}</h1>
       <p>{event.artist}</p>
       <p>{event.genre}</p>
@@ -148,6 +153,9 @@ export function EventPage() {
       {bookingState === "error" && (
         <p role="alert">Something went wrong. Please try again.</p>
       )}
+      <Link to={event.ticketUrl}>buy tickets</Link>
+      <Map events={[event]} height={"60vh"} width={"100%"} zoom={18} centre={{ lat: event.venue.location.coordinates[1], lng: event.venue.location.coordinates[0] }} />
+      <Footer />
     </>
   );
 }

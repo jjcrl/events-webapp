@@ -3,6 +3,7 @@ import { getMyProfile, getMyBookings } from "../../services/userProfile";
 import { authClient } from "../../services/authentication";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../../components/NavBar";
+import Footer from "../../components/Footer";
 
 function formatDate(dateStr) {
     if (!dateStr) return "TBC";
@@ -103,6 +104,8 @@ export function ProfilePage() {
                     <p>Your name: {session.user.name}</p>
                 </div>
             )}
+            }
+        <Footer/>
         </div>
     );
 }
