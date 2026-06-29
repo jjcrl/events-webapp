@@ -10,7 +10,7 @@ import Map from "../../components/Map";
 
 export function FeedPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   const [events, setEvents] = useState([]);
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,24 +24,24 @@ export function FeedPage() {
   const to = searchParams.get("to") || "";
   const tag = searchParams.get("tag") || "";
 
-function updateParam(key, value) {
-  const nextParams = new URLSearchParams(searchParams);
+  function updateParam(key, value) {
+    const nextParams = new URLSearchParams(searchParams);
 
-  if (value) {
-    nextParams.set(key, value);
-  } else {
-    nextParams.delete(key);
+    if (value) {
+      nextParams.set(key, value);
+    } else {
+      nextParams.delete(key);
+    }
+
+    setSearchParams(nextParams);
   }
-
-  setSearchParams(nextParams);
-}
 
   useEffect(() => {
 
     getCities()
-      .then((data)=> setCities(data.cities))
-      .catch((err)=> console.error(err));
-  },[]);
+      .then((data) => setCities(data.cities))
+      .catch((err) => console.error(err));
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -72,38 +72,38 @@ function updateParam(key, value) {
     );
   }
 
-    const topTags = useMemo(()=>{
-      const counts= {}
+  const topTags = useMemo(() => {
+    const counts = {}
 
-      events.forEach((event) => {
+    events.forEach((event) => {
       event.tags?.forEach((tagName) => {
         counts[tagName] = (counts[tagName] || 0) + 1;
       });
     });
 
-        return Object.entries(counts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 8)
-        .map(([tagName]) => tagName);
-    }, [events]);
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([tagName]) => tagName);
+  }, [events]);
 
-    const filteredEvents = useMemo(() => {
-      return events.filter((event) => {
-        const eventDate = new Date(event.date);
+  const filteredEvents = useMemo(() => {
+    return events.filter((event) => {
+      const eventDate = new Date(event.date);
 
-        if (tag && !event.tags?.includes(tag)) return false;
-        if (from && eventDate < new Date(`${from}T00:00:00`)) return false;
-        if (to && eventDate > new Date(`${to}T23:59:59`)) return false;
+      if (tag && !event.tags?.includes(tag)) return false;
+      if (from && eventDate < new Date(`${from}T00:00:00`)) return false;
+      if (to && eventDate > new Date(`${to}T23:59:59`)) return false;
 
-        return true;
-      });
-    }, [events, tag, from, to]);
+      return true;
+    });
+  }, [events, tag, from, to]);
 
   if (loading) return <p>Loading events...</p>;
   // if (error) return <p>Something went wrong</p>;
 
 
-  
+
 
 
 
@@ -118,9 +118,9 @@ function updateParam(key, value) {
           <select
             value={city}
             onChange={(e) => updateParam("city", e.target.value)}
-          > 
-          {cities.length === 0 && (
-            <option value="Manchester">Manchester</option>
+          >
+            {cities.length === 0 && (
+              <option value="Manchester">Manchester</option>
             )}
             {cities.map((cityName) => (
               <option key={cityName} value={cityName}>
@@ -160,9 +160,12 @@ function updateParam(key, value) {
         ))}
       </section>
 
-      <Map />
-      <Recommendations 
-        favouriteArtists={favouriteArtists} 
+      {events.length > 0 &&
+        <Map events={events} height={"400px"}  width={"100%"} zoom={12}/>
+      }
+
+      <Recommendations
+        favouriteArtists={favouriteArtists}
         setFavouriteArtists={setFavouriteArtists}  // ← is this there?
         savedEvents={savedEvents}
         onSavedToggled={handleSavedToggled}
