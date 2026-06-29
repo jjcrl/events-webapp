@@ -7,6 +7,8 @@ import EventFeed from "../../components/EventFeed";
 import NavBar from "../../components/NavBar";
 import Recommendations from "../../components/Recommendations";
 
+import Footer from "../../components/Footer";
+
 export function FeedPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   
@@ -172,6 +174,7 @@ function updateParam(key, value) {
         savedEvents={savedEvents}
         onSavedToggled={handleSavedToggled}
       />
+      <Footer/>
     </>
   );
 }
