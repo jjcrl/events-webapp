@@ -6,7 +6,7 @@ const EventFeed = ({ events, favouriteArtists, setFavouriteArtists, savedEvents 
     }
 
     return (
-        <div>
+        <div className="event-feed">
             {events.map((event) => (
                 <EventCard
                     key={event._id}

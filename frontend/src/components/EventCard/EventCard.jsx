@@ -16,9 +16,9 @@ function formatTime(timeString) {
     return timeString.slice(0, 5); // takes "19:00" from "19:00:00"
 }
 
-export default function EventCard({ event, favouriteArtists = [], setFavouriteArtists = () => {}, savedEvents = [], onSavedToggled }) {
+export default function EventCard({ event, favouriteArtists = [], setFavouriteArtists = () => { }, savedEvents = [], onSavedToggled }) {
     const navigate = useNavigate();
-    const { data: session } = authClient.useSession();
+    const { data: session, isPending } = authClient.useSession();
 
     if (!event) return null;
 
@@ -32,15 +32,30 @@ export default function EventCard({ event, favouriteArtists = [], setFavouriteAr
 
     async function handleSaveToFavourites(e) {
         e.stopPropagation(); // Handles the click on the button without triggering other click handlers
-        if (!session) {
+        if (!session && !isPending) {
             navigate("/login");
             return;
         }
         await toggleSavedEvent(event._id);
         if (onSavedToggled) onSavedToggled(event._id);
     }
-    
-    // console.log(event.tags)
+
+    function pickEventCardImage(images) {
+        const targetRatio = 16 / 9;
+        const minWidth = 640; // covers most card sizes at 2x density
+
+        const sixteenNine = images
+            .filter(img => Math.abs(img.width / img.height - targetRatio) < 0.05)
+            .sort((a, b) => a.width - b.width);
+
+        return (
+            sixteenNine.find(img => img.width >= minWidth)
+            ?? sixteenNine.at(-1)
+            ?? images.sort((a, b) => b.width - a.width)[0]
+        );
+    }
+
+    let sizes = pickEventCardImage(event.images)
 
     return (
         <div
@@ -53,27 +68,29 @@ export default function EventCard({ event, favouriteArtists = [], setFavouriteAr
         >
             {event.images && (
                 <img
-                    style={{height:"200px", width:"auto"}}
-                    src={event.images[0].url}
+                    src={sizes.url}
                     alt={`${event.name} image`}
                     className="event-image"
                 />
             )}
 
             <div className="event_body">
-                <h2 className="event_title">{event.name}</h2>
-                <p className="event_artist">{event.artist}</p>
-                {event.tags.map((tag) => (
-                    <p>{tag}</p>
-                ))}
+                <p className="event_title">{event.name}</p>
+                {/* <p className="event_artist">{event.artist}</p> */}
+                {/* <div className="tags">
+                    {event.tags.map((tag) => (
+                        <span>{tag}</span>
+                    ))}
+                </div> */}
+
                 <p className="event_datetime">
                     {formatDate(event.date)}
                     {/* {event.time && `· ${event.time}`} */}
                     {event.time && ` ${formatTime(event.time)}`}
                 </p>
                 <p className="event_location">
-                    {event.venue.name ? `${event.venue.name}, ` : ""}
-                    {event.city}
+                    {event.venue.name ? `${event.venue.name} ` : ""}
+
 
                 </p>
 

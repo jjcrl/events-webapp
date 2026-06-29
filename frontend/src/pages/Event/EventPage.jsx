@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { getEventById } from "../../services/events";
 import { authClient } from "../../services/authentication";
+import Footer from "../../components/Footer";
+import NavBar from "../../components/NavBar";
 
 import Map from "../../components/Map"
 
@@ -28,13 +30,18 @@ export function EventPage() {
 
   return (
     <>
+    <NavBar/>
       <h1>{event.name}</h1>
       <p>{event.artist}</p>
       <p>{event.genre}</p>
       <p>{event.city}</p>
       {event.description && <p className="event-description">{event.description}</p>}
       <Link to={event.ticketUrl}>buy tickets</Link>
+<<<<<<< mao
       <Map events={[event]} height={"60vh"} width={"100%"} zoom={18} centre={{ lat: event.venue.location.coordinates[1], lng: event.venue.location.coordinates[0] }} />
+=======
+      <Footer />
+>>>>>>> main
     </>
   );
 }
