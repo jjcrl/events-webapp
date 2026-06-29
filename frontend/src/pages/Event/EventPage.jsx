@@ -81,6 +81,7 @@ export function EventPage() {
 
   return (
     <>
+      <NavBar />
       {showConfirmation && (
         <div
           role="dialog"
@@ -134,8 +135,6 @@ export function EventPage() {
           </div>
         </div>
       )}
-
-    <NavBar/>
       <h1>{event.name}</h1>
       <p>{event.artist}</p>
       <p>{event.genre}</p>
