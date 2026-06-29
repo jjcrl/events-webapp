@@ -16,9 +16,9 @@ function formatTime(timeString) {
     return timeString.slice(0, 5); // takes "19:00" from "19:00:00"
 }
 
-export default function EventCard({ event, favouriteArtists = [], setFavouriteArtists = () => {}, savedEvents = [], onSavedToggled }) {
+export default function EventCard({ event, favouriteArtists = [], setFavouriteArtists = () => { }, savedEvents = [], onSavedToggled }) {
     const navigate = useNavigate();
-    const { data: session } = authClient.useSession();
+    const { data: session, isPending } = authClient.useSession();
 
     if (!event) return null;
 
@@ -32,14 +32,14 @@ export default function EventCard({ event, favouriteArtists = [], setFavouriteAr
 
     async function handleSaveToFavourites(e) {
         e.stopPropagation(); // Handles the click on the button without triggering other click handlers
-        if (!session) {
+        if (!session && !isPending) {
             navigate("/login");
             return;
         }
         await toggleSavedEvent(event._id);
         if (onSavedToggled) onSavedToggled(event._id);
     }
-    
+
     // console.log(event.tags)
 
     return (
@@ -53,7 +53,7 @@ export default function EventCard({ event, favouriteArtists = [], setFavouriteAr
         >
             {event.images && (
                 <img
-                    style={{height:"200px", width:"auto"}}
+                    style={{ height: "200px", width: "auto" }}
                     src={event.images[0].url}
                     alt={`${event.name} image`}
                     className="event-image"
