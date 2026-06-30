@@ -54,11 +54,21 @@
 }
 
 .recoms {
+  width: 100%;
+  text-align: center;
+}
+
+.recoms h2 {
+  margin-bottom: 1rem;
+}
+
+.recommended-events {
   display: flex;
-  flex-direction: row;
-  width: 100vw;
-  height: fit-content;
   justify-content: center;
+  gap: 2rem;
+  flex-wrap: nowrap;
+  width: 100%;
+  overflow-x: auto;
 }
 
 .hero {
@@ -102,4 +112,34 @@
   justify-content: center;
   background-color: whitesmoke;
   gap: 50vw
+}
+
+
+.calender-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.calender-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  min-height: 0;
+}
+
+.calender-cell {
+  border: 1px solid #ccc;
+  overflow: scroll;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap:1rem;
+}
+
+.cell-event{
+  background-color: whitesmoke;
 }

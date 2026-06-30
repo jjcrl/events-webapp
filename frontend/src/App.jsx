@@ -8,6 +8,7 @@ import { ProfilePage } from "./pages/Profile/ProfilePage";
 import { EventPage } from "./pages/Event/EventPage";
 import ProtectedRoute from "./components/ProtectedRoute"
 import { MapPage } from "./pages/Map/MapPage";
+import CalanderPage from "./pages/Calander/CalanderPage";
 
 
 // docs: https://reactrouter.com/en/main/start/overview
@@ -40,6 +41,11 @@ const router = createBrowserRouter([
     element:
       <MapPage />
   },
+  {
+    path: "/calendar",
+    element:
+      <CalanderPage />
+  }
 
 ]);
 

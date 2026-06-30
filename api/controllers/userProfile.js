@@ -1,6 +1,25 @@
 const UserProfile = require("../models/userProfile")
 const Event = require("../models/event")
 
+// Helper to pick the best image from an event's images array for card display
+function pickBestImage(images = []) {
+    if (!images || images.length === 0) return null
+    const targetRatio = 16 / 9
+    const minWidth = 640
+ 
+    const sixteenNine = images
+        .filter(img => img.width && img.height && Math.abs(img.width / img.height - targetRatio) < 0.05)
+        .sort((a, b) => a.width - b.width)
+ 
+    const best = (
+        sixteenNine.find(img => img.width >= minWidth) ??
+        sixteenNine.at(-1) ??
+        images.slice().sort((a, b) => (b.width || 0) - (a.width || 0))[0]
+    )
+ 
+    return best ? { url: best.url, width: best.width, height: best.height } : null
+}
+
 const getMyProfile = async (req, res) => {
     try {
         // find the userprofile by the auth id
@@ -46,6 +65,9 @@ const toggleFavouriteArtists = async (req, res) => {
     }
 }
 
+// Toggle save: if the event is already saved, remove it.
+// If not saved yet, look up the event and embed a rich snapshot
+// so the profile page can display images + metadata without extra queries.
 const toggleSavedEvent = async (req, res) => {
     try {
         const { eventId } = req.body
@@ -60,17 +82,64 @@ const toggleSavedEvent = async (req, res) => {
             return res.status(404).json({ error: "User's profile not found" })
         }
  
-        const isSaved = profile.savedEvents.includes(eventId)
+        const alreadySaved = profile.savedEvents.some(e => e.eventId === eventId)
  
-        const updatedProfile = await UserProfile.findOneAndUpdate(
-            { authUserId: req.user.id },
-            isSaved
-                ? { $pull: { savedEvents: eventId } }
-                : { $addToSet: { savedEvents: eventId } },
-            { new: true }
-        )
+        let updatedProfile
+        if (alreadySaved) {
+            // Remove the saved event snapshot
+            updatedProfile = await UserProfile.findOneAndUpdate(
+                { authUserId: req.user.id },
+                { $pull: { savedEvents: { eventId } } },
+                { new: true }
+            )
+        } else {
+            // Fetch the full event to embed the rich snapshot
+            const event = await Event.findById(eventId)
+            if (!event) {
+                return res.status(404).json({ error: "Event not found" })
+            }
+ 
+            const snapshot = {
+                eventId:   event._id.toString(),
+                name:      event.name,
+                artist:    event.artist,
+                date:      event.date,
+                city:      event.city,
+                venue:     event.venue?.name || "TBC",
+                image:     pickBestImage(event.images),
+                ticketUrl: event.ticketUrl || null,
+                tags:      event.tags || [],
+            }
+ 
+            updatedProfile = await UserProfile.findOneAndUpdate(
+                { authUserId: req.user.id },
+                { $addToSet: { savedEvents: snapshot } },
+                { new: true }
+            )
+        }
  
         return res.json({ profile: updatedProfile })
+    } catch (error) {
+        console.error(error)
+        return res.status(500).json({ error: "Something went wrong" })
+    }
+}
+
+// Returns the user's saved event snapshots (no extra DB query needed).
+const getSavedEvents = async (req, res) => {
+    try {
+        const profile = await UserProfile.findOne({ authUserId: req.user.id })
+        if (!profile) {
+            return res.status(404).json({ error: "User's profile not found" })
+        }
+ 
+        const now = new Date()
+        const savedEvents = profile.savedEvents.map(e => ({
+            ...e.toObject(),
+            isPast: new Date(e.date) < now,
+        }))
+ 
+        return res.json({ savedEvents })
     } catch (error) {
         console.error(error)
         return res.status(500).json({ error: "Something went wrong" })
@@ -146,9 +215,10 @@ const getMyBookings = async (req, res) => {
         if (!profile.bookings.length) {
             return res.json({ bookings: [] })
         }
- 
+
+        // Select name, artist, venue, date, time, images, ticketUrl
         const events = await Event.find({ _id: { $in: profile.bookings } })
-            .select("name artist venue date time ticketUrl")
+            .select("name artist venue date time images ticketUrl tags city")
  
         // Preserve booking order and tag upcoming vs past
         const now = new Date()
@@ -159,9 +229,13 @@ const getMyBookings = async (req, res) => {
                 _id: event._id,
                 name: event.name,
                 artist: event.artist,
-                venue: event.venue?.name || "TBC",
+                city: event.city,
+                venue: event.venue?.name ?? event.venue ?? "",
                 date: event.date,
                 time: event.time,
+                image: pickBestImage(event.images),
+                ticketUrl: event.ticketUrl || null,
+                tags: event.tags || [],
                 isPast: new Date(event.date) < now,
             }
         }).filter(Boolean)
@@ -187,4 +261,13 @@ const updateIsFirstLogin = async (req, res) => {
     }
 }
 
-module.exports = { updateLocation, getMyProfile, toggleFavouriteArtists, toggleSavedEvent, addBooking, getMyBookings, updateIsFirstLogin }
+module.exports = {
+    updateLocation,
+    getMyProfile,
+    toggleFavouriteArtists,
+    toggleSavedEvent,
+    getSavedEvents,
+    addBooking,
+    getMyBookings,
+    updateIsFirstLogin,
+}
