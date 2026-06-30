@@ -30,6 +30,7 @@ export function FeedPage() {
   const [bookings, setBookings] = useState([]);
   const [homeCity, setHomeCity] = useState(null);
   const [isFirstLoginSession, setIsFirstLoginSession] = useState(null);
+  
   const [currentPageNum, setCurrentPageNum] = useState(1)
   const [totalEvents, setTotalEvents] = useState(0)
   const LIMIT = 10
@@ -145,8 +146,6 @@ export function FeedPage() {
   const hasPrevPage = currentPageNum > 1;
   if (loading) return <p>Loading events...</p>;
   // if (error) return <p>Something went wrong</p>;
-
-  console.log("page:", currentPageNum, "offset:", offset);
 
   return (
     <>
