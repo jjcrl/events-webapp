@@ -1,7 +1,23 @@
 import React from 'react'
 import EventCard from './EventCard/EventCard'
+import { useEffect, useState } from 'react'
+import { getEvents } from '../services/events'
 
-function Recommendations({ favouriteArtists, setFavouriteArtists, savedEvents, onSavedToggled, events }) {
+function Recommendations({ favouriteArtists, setFavouriteArtists, savedEvents, onSavedToggled, homeCity }) {
+    const [events, setEvents] = useState([])
+
+
+    useEffect(() => {
+        if (!homeCity) return
+        getEvents({
+            city: homeCity,
+            from: new Date(),
+            to: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        })
+            .then((data) => setEvents(data.events))
+            .catch((err) => console.error(err))
+    }, [homeCity])
+
 
     // create a unique list of genres based on the fave artist 
     const favouriteGenres = [...new Set(
