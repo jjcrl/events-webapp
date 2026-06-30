@@ -41,70 +41,72 @@ export function ProfilePage() {
     const pastBookings = bookings.filter((b) => b.isPast);
 
     return (
-        <div>
+        <>
             <NavBar />
-            <h1>Profile</h1>
             {profile && (
-                <div>
-                    <p>Your location: {profile.homeLocation.city}</p>
- 
-                    <p>Your favourite artists:</p>
-                    {profile.favouriteArtists.length < 1 ? (
-                        <p><i>Follow some artists for personalised recommendations!</i></p>
-                    ) : (
-                        <ul>
-                            {profile.favouriteArtists.map((artist) => (
-                                <li key={artist}>{artist}</li>
-                            ))}
-                        </ul>
-                    )}
- 
-                    <section aria-label="Upcoming bookings">
-                        <h2>Upcoming Bookings</h2>
-                        {loading ? (
-                            <p>Loading bookings...</p>
-                        ) : upcomingBookings.length === 0 ? (
-                            <p><i>No upcoming bookings.</i></p>
+                <div className="page">
+                    <div className="profile-details">
+                        <div className="fallback" />
+                        <p>{session.user.name}</p>
+                        <p>{session.user.email}</p>
+                        <p>Home Location: {profile.homeLocation.city}</p>
+                        <p>Your favourite artists:</p>
+                        {profile.favouriteArtists.length < 1 ? (
+                            <p><i>Follow some artists for personalised recommendations!</i></p>
                         ) : (
                             <ul>
-                                {upcomingBookings.map((booking) => (
-                                    <li key={booking._id}>
-                                        <strong>{booking.artist}</strong>
-                                        <br />
-                                        {booking.name}
-                                        <br />
-                                        {booking.venue?.name || booking.venue} &mdash; {formatDate(booking.date)}{booking.time ? ` at ${booking.time}` : ""}
-                                    </li>
+                                {profile.favouriteArtists.map((artist) => (
+                                    <li key={artist}>{artist}</li>
                                 ))}
                             </ul>
                         )}
-                    </section>
- 
-                    <section aria-label="Past bookings">
-                        <h2>Past Bookings</h2>
-                        {loading ? (
-                            <p>Loading bookings...</p>
-                        ) : pastBookings.length === 0 ? (
-                            <p><i>No past bookings.</i></p>
-                        ) : (
-                            <ul>
-                                {pastBookings.map((booking) => (
-                                    <li key={booking._id}>
-                                        <strong>{booking.artist}</strong>
-                                        <br />
-                                        {booking.name}
-                                        <br />
-                                        {booking.venue?.name || booking.venue} &mdash; {formatDate(booking.date)}{booking.time ? ` at ${booking.time}` : ""}
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </section>
- 
-                    <p>Your name: {session.user.name}</p>
+
+                    </div>
+                    <div className="profile-actions">
+                        <section aria-label="Upcoming bookings">
+                            <h2>Upcoming Bookings</h2>
+                            {loading ? (
+                                <p>Loading bookings...</p>
+                            ) : upcomingBookings.length === 0 ? (
+                                <p><i>No upcoming bookings.</i></p>
+                            ) : (
+                                <ul>
+                                    {upcomingBookings.map((booking) => (
+                                        <li key={booking._id}>
+                                            <strong>{booking.artist}</strong>
+                                            <br />
+                                            {booking.name}
+                                            <br />
+                                            {booking.venue?.name || booking.venue} &mdash; {formatDate(booking.date)}{booking.time ? ` at ${booking.time}` : ""}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </section>
+                        <section aria-label="Past bookings">
+                            <h2>Past Bookings</h2>
+                            {loading ? (
+                                <p>Loading bookings...</p>
+                            ) : pastBookings.length === 0 ? (
+                                <p><i>No past bookings.</i></p>
+                            ) : (
+                                <ul>
+                                    {pastBookings.map((booking) => (
+                                        <li key={booking._id}>
+                                            <strong>{booking.artist}</strong>
+                                            <br />
+                                            {booking.name}
+                                            <br />
+                                            {booking.venue?.name || booking.venue} &mdash; {formatDate(booking.date)}{booking.time ? ` at ${booking.time}` : ""}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </section>
+                    </div>
                 </div>
             )}
-        <Footer/>
-        </div>
+            <Footer />
+        </>
     );
 }
