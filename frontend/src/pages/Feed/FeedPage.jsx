@@ -19,10 +19,11 @@ export function FeedPage() {
   const [savedEvents, setSavedEvents] = useState([]);
   const [eventsError, setEventsError] = useState(null);
   const [favouriteArtists, setFavouriteArtists] = useState([]);
+  const [homeCity, setHomeCity] = useState(null);
   const { data: session, isPending } = authClient.useSession();
 
-  const DEFAULT_CITY = "Manchester"
-  const city = searchParams.get("city") || cities[0] || DEFAULT_CITY;
+  const DEFAULT_CITY = "Manchester";
+  const city = searchParams.get("city") || DEFAULT_CITY;
   const from = searchParams.get("from") || "";
   const to = searchParams.get("to") || "";
   const tag = searchParams.get("tag") || "";
@@ -56,12 +57,21 @@ export function FeedPage() {
     if (!isPending && session?.user) {
       getMyProfile()
         .then(({ profile }) => {
-          setFavouriteArtists(profile.favouriteArtists);
-          setSavedEvents(profile.savedEvents);
+          setFavouriteArtists(profile.favouriteArtists || []);
+          setSavedEvents(profile.savedEvents || []);
+          setHomeCity(profile.homeLocation?.city || null);
         })
-        .catch((err) => setError(err));
+        .catch((err) => console.error("Profile fetch failed:", err));
     }
   }, [session, isPending]);
+
+  useEffect(() => {
+    if (session?.user && homeCity && !searchParams.get("city")) {
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.set("city", homeCity);
+      setSearchParams(nextParams);
+    }
+  }, [homeCity, session, searchParams, setSearchParams]);
 
   function handleSavedToggled(eventId) {
     if (session && !isPending) {
@@ -78,6 +88,7 @@ export function FeedPage() {
 
     events.forEach((event) => {
       event.tags?.forEach((tagName) => {
+        if (!tagName || tagName === "Undefined") return;
         counts[tagName] = (counts[tagName] || 0) + 1;
       });
     });
@@ -158,6 +169,9 @@ export function FeedPage() {
       </section>
 
       <section>
+        <button onClick={() => updateParam("tag", "")}>
+          All events
+        </button>
         {topTags.map((tagName) => (
           <button
             key={tagName}
