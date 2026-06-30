@@ -370,4 +370,23 @@ describe("profile controller", () => {
             expect(res.json).toHaveBeenCalledWith({ error: "User's profile not found" })
         })
     })
+    describe("updateIsFirstLogin", () => {
+        test("returns 204 when successful", async () => {
+            const profile = { authUserId: "user-123" };
+            UserProfile.findOne.mockResolvedValue(profile);
+            UserProfile.findOneAndUpdate.mockResolvedValue(profile);
+
+            await profileController.updateIsFirstLogin(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(204);
+        })
+        test("returns 404 if profile not found", async () => {
+            UserProfile.findOne.mockResolvedValue(null);
+
+            await profileController.updateIsFirstLogin(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.json).toHaveBeenCalledWith({ error: "Could not update login session details - user not found" });
+        })
+    })
 })

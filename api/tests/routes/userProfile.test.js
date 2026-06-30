@@ -299,3 +299,35 @@ describe("GET /profile/me/bookings", () => {
         expect(response.body.error).toBe("Not authenticated");
     });
 });
+
+describe("PUT /profile/me/complete-first-login", () => {
+    test("should update isFirstLogin and return 204", async () => {
+        await userProfile.create(createFakeUserProfile({ isFirstLogin: true }));
+
+        const response = await request(app)
+            .put("/profile/me/complete-first-login");
+
+        expect(response.status).toBe(204);
+
+        const updatedProfile = await userProfile.findOne({ authUserId: "fakeUserId" });
+        expect(updatedProfile.isFirstLogin).toBe(false);
+    });
+
+    test("should return 404 if profile not found", async () => {
+        const response = await request(app)
+            .put("/profile/me/complete-first-login");
+
+        expect(response.status).toBe(404);
+        expect(response.body.error).toBe("Could not update login session details - user not found");
+    });
+
+    test("should return 401 if user is not authenticated", async () => {
+        auth.api.getSession.mockResolvedValueOnce(null);
+
+        const response = await request(app)
+            .put("/profile/me/complete-first-login");
+
+        expect(response.status).toBe(401);
+        expect(response.body.error).toBe("Not authenticated");
+    });
+});

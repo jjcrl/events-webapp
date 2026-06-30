@@ -29,5 +29,10 @@ describe("UserProfile model", () => {
     const profile = new UserProfile({ authUserId: "abc" })
     await profile.save()
     expect(profile.bookings).toEqual([])
-  })
+  });
+  test('isFirstLogin defaults to true', async () => {
+    const profile = new UserProfile({ authUserId: "abc" })
+    await profile.save()
+    expect(profile.isFirstLogin).toEqual(true)
+  });
 })
