@@ -7,8 +7,15 @@ import EventFeed from "../../components/EventFeed";
 import NavBar from "../../components/NavBar";
 import Recommendations from "../../components/Recommendations";
 import HomeLocationUpdateDialog from "../../components/HomeLocationUpdateDialog";
-
 import Footer from "../../components/Footer";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 
 export function FeedPage() {
@@ -23,6 +30,10 @@ export function FeedPage() {
   const [bookings, setBookings] = useState([]);
   const [homeCity, setHomeCity] = useState(null);
   const [isFirstLoginSession, setIsFirstLoginSession] = useState(null);
+  const [currentPageNum, setCurrentPageNum] = useState(1)
+  const [totalEvents, setTotalEvents] = useState(0)
+  const LIMIT = 10
+  const offset = (currentPageNum - 1) * LIMIT
   const { data: session, isPending } = authClient.useSession();
 
   const DEFAULT_CITY = "Manchester";
@@ -47,14 +58,22 @@ export function FeedPage() {
       .catch((err) => console.error(err));
   }, []);
 
+  // resets the current page when any of the filters change
+  useEffect(() => {
+    setCurrentPageNum(1);
+  }, [city, tag, from, to]);
+
   useEffect(() => {
     setLoading(true);
     setEventsError(null);
-    getEvents({ city })
-      .then((data) => setEvents(data.events))
+    getEvents({ city, offset, limit: LIMIT })
+      .then((data) => {
+        setEvents(data.events)
+        setTotalEvents(data.totalEvents)
+      })
       .catch((err) => setEventsError(err))
       .finally(() => setLoading(false));
-  }, [city]);
+  }, [city, offset]);
 
   useEffect(() => {
     if (!isPending && session?.user) {
@@ -121,12 +140,18 @@ export function FeedPage() {
     });
   }, [events, tag, from, to]);
 
+  const totalPages = Math.ceil(totalEvents / LIMIT);
+  const hasNextPage = currentPageNum < totalPages;
+  const hasPrevPage = currentPageNum > 1;
   if (loading) return <p>Loading events...</p>;
   // if (error) return <p>Something went wrong</p>;
+
+  console.log("page:", currentPageNum, "offset:", offset);
 
   return (
     <>
       <NavBar />
+
       <HomeLocationUpdateDialog
         isFirstLoginSession={isFirstLoginSession}
         setIsFirstLoginSession={setIsFirstLoginSession}
@@ -195,8 +220,6 @@ export function FeedPage() {
         ))}
       </section>
 
-
-
       <EventFeed
         events={filteredEvents}
         favouriteArtists={favouriteArtists}
@@ -204,6 +227,38 @@ export function FeedPage() {
         savedEvents={savedEvents}
         onSavedToggled={handleSavedToggled}
       />
+
+      <Pagination>
+        <PaginationContent>
+          {hasPrevPage && (
+            <PaginationItem>
+              <PaginationPrevious 
+                onClick={() => {
+                  const isFirstPage = currentPageNum <= 1;
+                  if (isFirstPage) return;
+
+                  setCurrentPageNum(currentPageNum - 1);
+                }} 
+              />
+            </PaginationItem>
+          )}
+  
+          {hasNextPage && (
+            <PaginationItem>
+              <PaginationNext 
+                onClick={() => {
+                  const isLastPage = currentPageNum >= totalPages;
+                  if (isLastPage) return;
+
+                  setCurrentPageNum(currentPageNum + 1);
+                }}
+              />
+            </PaginationItem>
+          )}
+
+
+        </PaginationContent>
+      </Pagination>
       <Footer/>
     </>
   );

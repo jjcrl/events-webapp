@@ -3,8 +3,13 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 export const getEvents = async (filters = {}) => {
     try {
         //remove any empty filters before sending
+        const hasValue = (value) => {
+            return value !== undefined &&
+                value !== null &&
+                value !== '';
+        }
         const cleanFilters = Object.fromEntries(
-            Object.entries(filters).filter(([_, v]) => v)
+            Object.entries(filters).filter(([_, v]) => hasValue(v))
         )
         const params = new URLSearchParams(cleanFilters)
 
