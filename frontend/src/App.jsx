@@ -42,7 +42,7 @@ const router = createBrowserRouter([
       <MapPage />
   },
   {
-    path: "/calander",
+    path: "/calendar",
     element:
       <CalanderPage />
   }
