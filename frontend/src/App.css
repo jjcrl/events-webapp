@@ -15,6 +15,8 @@
   padding: 1vw;
 }
 
+
+
 .event_body {
   display: flex;
   flex-direction: column;
@@ -28,8 +30,11 @@
   margin: 0;
 }
 
+.card-image-wrap {
+  position: relative;
+}
 
-.tags {
+.event_tags {
   display: flex;
   flex-direction: row;
   gap: 1vw;
@@ -41,16 +46,23 @@
   aspect-ratio: 1 / 1;
   object-fit: cover;
   border-radius: 10px;
+  display: block;
+}
+
+.save-event-btn {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
 }
 
 .event-feed {
-  width: 100vw;
+  width: 90vw;
   height: fit-content;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 1rem;
+  justify-self: center;
 }
 
 .recoms {
@@ -102,4 +114,135 @@
   justify-content: center;
   background-color: whitesmoke;
   gap: 50vw
+}
+
+.page {
+  display: flex;
+  flex-direction: row;
+  width: 100vw;
+  gap: 5rem;
+  align-content: center;
+  justify-content: center;
+  padding-top: 5rem;
+  padding-bottom: 10rem;
+}
+
+
+
+.event-mini {
+  width: 40%;
+  height: fit-content;
+}
+
+.event-mini img {
+  height: fit-content;
+  width: 80%;
+  border-radius: 10px;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+}
+
+.event-details {
+  width: 40%;
+  text-align: left;
+}
+
+.event-details h1 {
+  margin-top: 0;
+}
+
+.tags {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+
+
+
+.profile-details {
+  height: fit-content;
+  width: 30%
+}
+
+.profile-actions {
+  height: fit-content;
+  width: 50%;
+}
+
+.fallback {
+  width: 20rem;
+  height: 15rem;
+  background-color: whitesmoke;
+  align-self: center;
+  justify-self: center;
+}
+
+
+.filters {
+  width: fit-content;
+  height: fit-content;
+  margin-left: 10rem;
+}
+
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  padding: 0.5rem
+}
+
+
+.events-title {
+  text-align: left;
+  margin-left: 10rem;
+}
+
+.buttons button {
+  height: 40px
+}
+
+
+.desc {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.input {
+  text-align: left;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  padding: 0.5rem
+}
+
+
+nav {
+  height: 8vh;
+  background-color: whitesmoke;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 5rem;
+  padding-right: 5rem;
+}
+
+
+.go-back {
+  position: fixed;
+  top: 5rem;
+  left: 5rem;
+  z-index: 1;
+}
+
+.map-page {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  z-index: 0;
 }
