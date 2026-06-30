@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { getMyProfile, getMyBookings, getSavedEvents } from "../../services/userProfile";
+import { getMyProfile, getMyBookings, updateHomeLocation, getSavedEvents } from "../../services/userProfile";
 import { authClient } from "../../services/authentication";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../../components/NavBar";
 import Footer from "../../components/Footer";
+import LocationSearch from "../../components/LocationSearch";
 
 function formatDate(dateStr) {
     if (!dateStr) return "TBC";
@@ -64,6 +65,9 @@ export function ProfilePage() {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [homeLocation, setHomeLocation] = useState(null);
+    const [success, setSuccess] = useState(false);
+    const [selectedLocation, setSelectedLocation] = useState(null)
     const [bookings, setBookings] = useState([]);
     const [savedEvents, setSavedEvents] = useState([]);
 
@@ -74,12 +78,30 @@ export function ProfilePage() {
         Promise.all([getMyProfile(), getMyBookings(), getSavedEvents()])
             .then(([profileData, bookingsData, savedData]) => {
                 setProfile(profileData.profile);
+                setHomeLocation(profileData.profile.homeLocation?.city);
                 setBookings(bookingsData.bookings || []);
                 setSavedEvents(savedData.savedEvents || []);
             })
             .catch((err) => setError(err))
             .finally(() => setLoading(false));
     }, []);
+
+
+    const handleLocationSubmit = async (e) => {
+        e.preventDefault()
+        if (!selectedLocation) return
+        try {
+            const updatedCity = await updateHomeLocation({ 
+                city: selectedLocation.city, 
+                lat: selectedLocation.lat, 
+                long: selectedLocation.lng  // ← Geoapify uses lng, backend expects long
+            })
+            setHomeLocation(updatedCity)
+            setSuccess(true)
+        } catch (err) {
+            setError(err)
+        }
+    }
 
     if (error) return <p>{error.message}</p>;
     if (loading) return <p>Loading profile…</p>;
@@ -114,9 +136,14 @@ export function ProfilePage() {
 
             {profile && (
                 <div>
-                    <p><strong>Your location:</strong> {profile.homeLocation.city}</p>
-
-                    <p><strong>Your favourite artists:</strong></p>
+                    <form onSubmit={handleLocationSubmit}>
+                        <p><strong>Your location:</strong> {homeLocation}</p>
+                        <LocationSearch onCitySelect={({ city, lat, lng }) => {
+                            setSelectedLocation({ city, lat, lng })
+                        }} />
+                        <button type="submit">Update</button>
+                    </form>
+                    <p><strong>Your favourite artists:</strong> </p>
                     {profile.favouriteArtists.length < 1 ? (
                         <p><i>Follow some artists for personalised recommendations!</i></p>
                     ) : (
