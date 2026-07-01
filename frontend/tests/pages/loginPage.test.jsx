@@ -1,9 +1,9 @@
 import { render, screen, fireEvent } from "@testing-library/react"
 import { MemoryRouter } from "react-router-dom"
-import { LoginPage } from "../../pages/Login/LoginPage"
-import { authClient } from "../../services/authentication"
+import { LoginPage } from "../../src/pages/Login/LoginPage"
+import { authClient } from "../../src/services/authentication"
 // Mock authClient
-vi.mock("../../services/authentication", () => ({
+vi.mock("../../src/services/authentication", () => ({
   authClient: {
     signIn: {
       email: vi.fn()
@@ -12,6 +12,14 @@ vi.mock("../../services/authentication", () => ({
       email: vi.fn()
     }
   }
+}))
+// Mock userProfile service (used for the optional home-city update on signup)
+vi.mock("../../src/services/userProfile", () => ({
+  updateHomeLocation: vi.fn()
+}))
+// Mock LocationSearch (Geoapify)
+vi.mock("../../src/components/LocationSearch", () => ({
+  default: () => <div data-testid="location-search-stub" />,
 }))
 // Mock useNavigate
 vi.mock("react-router-dom", async () => {
@@ -43,8 +51,9 @@ describe("LoginPage", () => {
       </MemoryRouter>
     )
     fireEvent.click(screen.getByTestId("toggle-auth"))
-    expect(screen.getByPlaceholderText("Name")).toBeTruthy()
-    expect(screen.getByRole("button", { name: "Sign up" })).toBeTruthy()
+    expect(screen.getByPlaceholderText("First name")).toBeTruthy()
+    expect(screen.getByPlaceholderText("Last name")).toBeTruthy()
+    expect(screen.getByRole("button", { name: "Create account" })).toBeTruthy()
   })
   test("shows error message when login fails", async () => {
     authClient.signIn.email.mockResolvedValue({
@@ -87,6 +96,36 @@ describe("LoginPage", () => {
     expect(authClient.signIn.email).toHaveBeenCalledWith({
       email: "test@test.com",
       password: "password123"
+    })
+  })
+  test("combines first and last name into a single name on sign up", async () => {
+    authClient.signUp.email.mockResolvedValue({ data: {}, error: null })
+
+    render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>
+    )
+
+    fireEvent.click(screen.getByTestId("toggle-auth"))
+    fireEvent.change(screen.getByPlaceholderText("First name"), {
+      target: { value: "Zein" }
+    })
+    fireEvent.change(screen.getByPlaceholderText("Last name"), {
+      target: { value: "Smith" }
+    })
+    fireEvent.change(screen.getByPlaceholderText("Email"), {
+      target: { value: "zein@test.com" }
+    })
+    fireEvent.change(screen.getByPlaceholderText("Password"), {
+      target: { value: "password123" }
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Create account" }))
+
+    expect(authClient.signUp.email).toHaveBeenCalledWith({
+      email: "zein@test.com",
+      password: "password123",
+      name: "Zein Smith"
     })
   })
 })

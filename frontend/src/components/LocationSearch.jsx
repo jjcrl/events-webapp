@@ -1,9 +1,9 @@
 import '@geoapify/geocoder-autocomplete/styles/minimal.css'
 import { GeoapifyContext, GeoapifyGeocoderAutocomplete } from '@geoapify/react-geocoder-autocomplete'
 
-const CitySearch = ({ onCitySelect }) => {
+const CitySearch = ({ onCitySelect, placeholder = "Search for a city..." }) => {
     const handleSelect = (place) => {
-        if (!place) return  // ← add this guard
+        if (!place) return
         
         const city = place.properties.city || place.properties.name
         const lat = place.properties.lat
@@ -15,7 +15,7 @@ const CitySearch = ({ onCitySelect }) => {
     return (
     <GeoapifyContext apiKey={import.meta.env.VITE_GEOAPIFY_API_KEY}>
         <GeoapifyGeocoderAutocomplete
-            placeholder="Search for a city..."
+            placeholder={placeholder}
             type="city"
             limit={3}
             placeSelect={handleSelect}

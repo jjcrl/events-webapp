@@ -81,8 +81,10 @@ describe("Profile Page", () => {
         expect(await screen.findByText("London")).toBeInTheDocument();
         expect(screen.getByText("Beyonce")).toBeInTheDocument();
         expect(screen.getByText("Mariah Carey")).toBeInTheDocument();
-        expect(screen.getByText(/Welcome back,/i)).toBeInTheDocument();
-        expect(screen.getByText("Test User")).toBeInTheDocument();
+        // First name only — not the full name, and not the email
+        expect(screen.getByText("Test")).toBeInTheDocument();
+        expect(screen.queryByText("Test User")).not.toBeInTheDocument();
+        expect(screen.queryByText("user@test.com")).not.toBeInTheDocument();
     });
 
     test("shows error message when fetching profile fails", async () => {
