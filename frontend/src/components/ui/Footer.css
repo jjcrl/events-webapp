@@ -1,0 +1,44 @@
+.footer {
+  background: #f7f7f8;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 48px 64px;
+}
+
+.footer-brand p {
+  color: #6b7280;
+  font-size: 13px;
+  margin: 8px 0 0;
+}
+
+.footer-logo {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0a1628;
+}
+
+.footer-logo span {
+  color: #e65386;
+}
+
+.footer-team-title {
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #0a1628;
+  margin: 0 0 12px;
+}
+
+.footer-team ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-team li {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.8;
+}

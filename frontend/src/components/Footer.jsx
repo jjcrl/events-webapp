@@ -1,21 +1,24 @@
-import React from 'react'
+import "./Footer.css";
 
 function Footer() {
   return (
-    <div className='footer'>
-      <div>
-        <p>this is some details the will go in the footer</p>
+    <footer className="footer">
+      <div className="footer-brand">
+        <span className="footer-logo">En<span>Core</span></span>
+        <p>© 2026 EnCore. Built at Makers Academy</p>
       </div>
-      <div>
+      <div className="footer-team">
+        <p className="footer-team-title">Our Team</p>
         <ul>
-          <li>this is some info</li>
-          <li>this is some info</li>
-          <li>this is some info</li>
-          <li>this is some info</li>
+          <li>Joe Carroll</li>
+          <li>Kit Trowbridge</li>
+          <li>Zein Rafie</li>
+          <li>Coral Han</li>
+          <li>Maria Karagianni</li>
         </ul>
       </div>
-    </div>
-  )
+    </footer>
+  );
 }
 
-export default Footer
+export default Footer;

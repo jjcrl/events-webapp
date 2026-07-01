@@ -1,0 +1,29 @@
+.signup-banner {
+  background: #071b39;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 40px 64px;
+}
+
+.signup-banner h2 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.signup-banner p {
+  margin: 0;
+  color: #aeb8c8;
+  font-size: 18px;
+}
+
+.signup-banner-button {
+  background: #e65386;
+  color: white;
+  text-decoration: none;
+  padding: 18px 40px;
+  border-radius: 10px;
+  font-weight: 800;
+}

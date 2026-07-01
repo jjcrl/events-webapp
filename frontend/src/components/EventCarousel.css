@@ -2,38 +2,79 @@
   width: 100%;
   max-width: 100vw;
   overflow: hidden;
-  margin: 3rem 0;
+  padding: 56px 64px;
+  box-sizing: border-box;
+  background: white;
 }
 
-.event-carousel-section h2 {
-  margin-left: 2rem;
+.event-carousel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.event-carousel-header h2 {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0a1628;
+  margin: 0;
+}
+
+.view-all-link {
+  margin-left: auto;
+  color: #b23a65;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.event-carousel-tags {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.event-carousel-tags button {
+  background: transparent;
+  border: 1.5px solid #e8b4c8;
+  color: #b23a65;
+  border-radius: 999px;
+  padding: 6px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.event-carousel-tags button:hover {
+  background: #fdf0f5;
+}
+
+.event-carousel-tags button.active {
+  background: #f5d0df;
+  border-color: #b23a65;
+  color: #b23a65;
+}
+
+.event-carousel-wrapper {
+  width: 100%;
+  overflow: hidden;
 }
 
 .event-carousel {
   display: flex;
-  flex-wrap: nowrap;
-  gap: 2rem;
-  overflow-x: auto;
-  overflow-y: hidden;
+  gap: 32px;
   width: 100%;
-  max-width: 100vw;
-  padding: 1rem 2rem 2rem;
-  scroll-behavior: smooth;
-  scroll-snap-type: x mandatory;
+  box-sizing: border-box;
 }
 
 .event-carousel-card {
-  flex: 0 0 280px;
-  min-width: 280px;
-  max-width: 280px;
-  scroll-snap-align: start;
-}
-
-.event-carousel-card article,
-.event-carousel-card > * {
-  width: 100%;
-}
-
-.event-carousel::-webkit-scrollbar {
-  height: 8px;
+  flex: 0 0 260px;
+  width: 260px;
 }

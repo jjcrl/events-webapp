@@ -1,17 +1,17 @@
 import React from 'react'
 
-function Hero(props) {
+function Hero({ left, right }) {
   return (
-    <div className='hero'>
-      <div className='left'>
-        <p>{props.right}</p>
+    <section className="hero">
+      <div className="hero-left">
+        {left}
+      </div>
 
+      <div className="hero-right">
+        {right}
       </div>
-      <div className='right'>
-        <p>{props.left}</p>
-      </div>
-    </div>
-  )
+    </section>
+  );
 }
 
-export default Hero
+export default Hero;
