@@ -36,7 +36,7 @@ export function FeedPage() {
       <p className="text-5xl text-muted font-bold">EVENTS</p>
       <p className="text-2xl text-muted-foreground font-medium">Browse whats coming up, or follow artists for tailord picks.</p>
       </div>
-      {session && !profileLoading && <Recommendations profile={profile} />}
+      {session && !profileLoading && <Recommendations profile={profile} isLoggedIn={!!session} />}
       <EventFeedSection profile={profile} isLoggedIn={!!session} />
       <Footer />
     </>
