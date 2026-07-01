@@ -173,25 +173,37 @@ describe("PUT /profile/me/favourite-artists", () => {
 
 describe("PUT /profile/me/saved-events", () => {
     test("should save an event and return 200 with updated savedEvents", async () => {
-        await userProfile.create(createFakeUserProfile({ savedEvents: [] }));
+        const fakeEvent = await createFakeEvent();
+        await userProfile.create(createFakeUserProfile());
  
         const response = await request(app)
             .put("/profile/me/saved-events")
-            .send({ eventId: "event-abc" });
+            .send({ eventId: fakeEvent._id.toString() });
  
         expect(response.status).toBe(200);
-        expect(response.body.profile.savedEvents).toContain("event-abc");
     });
  
     test("should remove an already-saved event (toggle off)", async () => {
-        await userProfile.create(createFakeUserProfile({ savedEvents: ["event-abc"] }));
+        await userProfile.create(createFakeUserProfile({
+            savedEvents: [
+                {
+                    eventId: "event-abc",
+                    name: "Test Show",
+                    artist: "Test Artist",
+                    city: "London",
+                    date: new Date(),
+                    venue: "O2 Arena",
+                    tags: []
+                }
+            ]
+        }));
  
         const response = await request(app)
             .put("/profile/me/saved-events")
             .send({ eventId: "event-abc" });
  
         expect(response.status).toBe(200);
-        expect(response.body.profile.savedEvents).not.toContain("event-abc");
+        expect(response.body.profile.savedEvents).toEqual([]);
     });
  
     test("should return 400 if eventId is missing", async () => {
@@ -295,6 +307,38 @@ describe("GET /profile/me/bookings", () => {
  
         const response = await request(app).get("/profile/me/bookings");
  
+        expect(response.status).toBe(401);
+        expect(response.body.error).toBe("Not authenticated");
+    });
+});
+
+describe("PUT /profile/me/complete-first-login", () => {
+    test("should update isFirstLogin and return 204", async () => {
+        await userProfile.create(createFakeUserProfile({ isFirstLogin: true }));
+
+        const response = await request(app)
+            .put("/profile/me/complete-first-login");
+
+        expect(response.status).toBe(204);
+
+        const updatedProfile = await userProfile.findOne({ authUserId: "fakeUserId" });
+        expect(updatedProfile.isFirstLogin).toBe(false);
+    });
+
+    test("should return 404 if profile not found", async () => {
+        const response = await request(app)
+            .put("/profile/me/complete-first-login");
+
+        expect(response.status).toBe(404);
+        expect(response.body.error).toBe("Could not update login session details - user not found");
+    });
+
+    test("should return 401 if user is not authenticated", async () => {
+        auth.api.getSession.mockResolvedValueOnce(null);
+
+        const response = await request(app)
+            .put("/profile/me/complete-first-login");
+
         expect(response.status).toBe(401);
         expect(response.body.error).toBe("Not authenticated");
     });

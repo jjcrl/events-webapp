@@ -1,62 +1,67 @@
 import { useState } from "react"
-import { updateIsFirstLogin, updateHomeLocation } from "../services/userProfile";
-import LocationSearch from "../components/LocationSearch";
+import { updateIsFirstLogin } from "../services/userProfile";
+import HomeLocationForm from "./HomeLocationForm";
+import { Button } from "@/components/ui/button";
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
 
 
-// will change to Shad dialog component once installed
-
-const HomeLocationUpdateDialog = ({isFirstLoginSession, setIsFirstLoginSession}) => {
-    const [homeLocation, setHomeLocation] = useState(null);
-    const [success, setSuccess] = useState(false);
-    const [selectedLocation, setSelectedLocation] = useState(null)
+const HomeLocationUpdateDialog = ({profile, setNewHomeLocation}) => {
     const [error, setError] = useState(null);
+    const [dialogOpen, setDialogOpen] = useState(profile.isFirstLogin)
 
-    const completeFirstLogin = async () => {
+    const setFirstLoginToFalse = async () => {
         await updateIsFirstLogin();
-        setIsFirstLoginSession(false);
+    }
+    
+    const completeFirstLogin = async () => {
+        await setFirstLoginToFalse();
+        setDialogOpen(false);
+        if (setNewHomeLocation) {
+            await setNewHomeLocation();
+        }
     };
 
-    const handleLocationSubmit = async (e) => {
-        e.preventDefault()
-        if (!selectedLocation) return
-        try {
-            const updatedCity = await updateHomeLocation({ 
-                city: selectedLocation.city, 
-                lat: selectedLocation.lat, 
-                long: selectedLocation.lng
-            })
-            setHomeLocation(updatedCity)
-            setSuccess(true)
-            await completeFirstLogin()
-
-        } catch (err) {
-            setError(err)
-        }
-    }
-
+    // this will remove the dialog from that point on without re-fetching the profile
+    // (since no changes were made to user's home location)
     const handleClose = async () => {
         try {
-            await completeFirstLogin();
+            await setFirstLoginToFalse();
+            setDialogOpen(false);
         } catch (err) {
             setError(err);
+            console.log(err)
         }
     }
     
     return(
-        isFirstLoginSession && 
-            <div style={{width: "300px", border: "1px solid black"}}> 
-                <p>Set your location for a personalised feed!</p>
-                <form onSubmit={handleLocationSubmit}>
-                    <p>Your location: {homeLocation}</p>
-                    <LocationSearch onCitySelect={({ city, lat, lng }) => {
-                        setSelectedLocation({ city, lat, lng })
-                    }} />
-                    <button type="submit">Update</button>
-                </form>
-                <p>Want to keep your location as Manchester for now? You can always update it on your profile page.</p>
-                
-                <button onClick={handleClose}>Close</button>
-            </div>
+            <Dialog 
+                open={dialogOpen} 
+                onOpenChange={(open) => {
+                    if (!open) {
+                        handleClose();
+                }
+            }}>
+                <DialogContent
+                    showCloseButton={false}
+                >
+                    <p>Set your location for a personalised feed!</p>
+                    <HomeLocationForm 
+                        onLocationUpdated={completeFirstLogin}
+                    />
+                    <p>Want to keep your location as Manchester for now? You can always update it on your profile page.</p>
+                <DialogClose asChild>
+                    <Button type="button" onClick={handleClose}>Close</Button>
+                </DialogClose>
+                </DialogContent>
+            </Dialog>
 
     )
 }

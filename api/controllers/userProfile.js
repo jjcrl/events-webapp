@@ -249,15 +249,22 @@ const getMyBookings = async (req, res) => {
 
 const updateIsFirstLogin = async (req, res) => {
     try {
+        const profile = await UserProfile.findOne({ authUserId: req.user.id })
+
+        if (!profile) {
+            return res.status(404).json({ error: "Could not update login session details - user not found" })
+        }
+
         await UserProfile.findOneAndUpdate(
             { authUserId: req.user.id },
             { isFirstLogin: false },
             { new: true }
-        );
-        return res.sendStatus(204);
+        )
+
+        return res.status(204).json()
     } catch (error) {
         console.error(error)
-        return res.status(500).json({ error: "Something went wrong" })
+        return res.status(500).json({ error: "Could not update login session details" })
     }
 }
 

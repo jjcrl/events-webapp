@@ -1,10 +1,16 @@
 import { useEffect, useState } from "react";
-import { getMyProfile, getMyBookings, updateHomeLocation, getSavedEvents } from "../../services/userProfile";
+import { getMyProfile, getMyBookings, getSavedEvents } from "../../services/userProfile";
 import { authClient } from "../../services/authentication";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../../components/NavBar";
 import Footer from "../../components/Footer";
-import LocationSearch from "../../components/LocationSearch";
+import HomeLocationForm from "@/components/HomeLocationForm";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
+import { Button } from "@/components/ui/button";
 
 function formatDate(dateStr) {
     if (!dateStr) return "TBC";
@@ -18,17 +24,15 @@ function formatDate(dateStr) {
 
 function formatTime(timeStr) {
     if (!timeStr) return "";
-    if (timeStr.split(":").length === 3) {
-        return timeStr;
-    }
-    return `${timeStr}:00`;
+    const [hours, minutes] = timeStr.split(":");
+    return minutes !== undefined ? `${hours}:${minutes}` : hours;
 }
 
 // Compact card used for both saved events and bookings on the profile page
 function EventSnapshotCard({ item, onClick }) {
     return (
         <li
-            className="event-snapshot-card"
+            className="event-card event-snapshot-card"
             data-testid="event-snapshot-card"
             onClick={onClick}
             role={onClick ? "button" : undefined}
@@ -43,19 +47,21 @@ function EventSnapshotCard({ item, onClick }) {
                 <img
                     src={item.image.url}
                     alt={`${item.name} event image`}
-                    className="event-snapshot-image"
+                    className="event-image"
                     data-testid="event-snapshot-image"
                 />
             )}
-            <div className="event-snapshot-body">
-                <strong className="event-snapshot-artist">{item.artist}</strong>
-                <p className="event-snapshot-name">{item.name}</p>
-                <p className="event-snapshot-venue">{item.venue?.name || item.venue}</p>
-                <p className="event-snapshot-date">
+            <div className="event_body">
+                <h2 className="event_title">{item.name}</h2>
+                <p className="event_artist">{item.artist}</p>
+                <p className="event_datetime">
                     {formatDate(item.date)}
-                    {item.time ? ` · ${formatTime(item.time)}` : ""}
+                    {item.time && ` ${formatTime(item.time)}`}
                 </p>
-                {item.city && <p className="event-snapshot-city">{item.city}</p>}
+                <p className="event_location">
+                    {(item.venue?.name || item.venue) ? `${item.venue?.name || item.venue}, ` : ""}
+                    {item.city}
+                </p>
             </div>
         </li>
     );
@@ -66,10 +72,9 @@ export function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [homeLocation, setHomeLocation] = useState(null);
-    const [success, setSuccess] = useState(false);
-    const [selectedLocation, setSelectedLocation] = useState(null)
     const [bookings, setBookings] = useState([]);
     const [savedEvents, setSavedEvents] = useState([]);
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 
     const { data: session } = authClient.useSession();
     const navigate = useNavigate();
@@ -85,23 +90,6 @@ export function ProfilePage() {
             .catch((err) => setError(err))
             .finally(() => setLoading(false));
     }, []);
-
-
-    const handleLocationSubmit = async (e) => {
-        e.preventDefault()
-        if (!selectedLocation) return
-        try {
-            const updatedCity = await updateHomeLocation({ 
-                city: selectedLocation.city, 
-                lat: selectedLocation.lat, 
-                long: selectedLocation.lng  // ← Geoapify uses lng, backend expects long
-            })
-            setHomeLocation(updatedCity)
-            setSuccess(true)
-        } catch (err) {
-            setError(err)
-        }
-    }
 
     if (error) return <p>{error.message}</p>;
     if (loading) return <p>Loading profile…</p>;
@@ -136,13 +124,21 @@ export function ProfilePage() {
 
             {profile && (
                 <div>
-                    <form onSubmit={handleLocationSubmit}>
-                        <p><strong>Your location:</strong> {homeLocation}</p>
-                        <LocationSearch onCitySelect={({ city, lat, lng }) => {
-                            setSelectedLocation({ city, lat, lng })
-                        }} />
-                        <button type="submit">Update</button>
-                    </form>
+                    <p><strong>Your location:</strong> {homeLocation}</p>
+                    <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                        <PopoverTrigger>
+                            <Button>Edit</Button>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                            <HomeLocationForm 
+                                onLocationUpdated={(updatedCity) => {
+                                    setHomeLocation(updatedCity)
+                                    setIsPopoverOpen(false)
+                                }}
+                            />
+                        </PopoverContent>
+                    </Popover>
+
                     <p><strong>Your favourite artists:</strong> </p>
                     {profile.favouriteArtists.length < 1 ? (
                         <p><i>Follow some artists for personalised recommendations!</i></p>
@@ -159,7 +155,7 @@ export function ProfilePage() {
                         {upcomingSaved.length === 0 ? (
                             <p><i>No upcoming saved events.</i></p>
                         ) : (
-                            <ul className="event-snapshot-list" data-testid="saved-events-list">
+                            <ul className="event-feed event-snapshot-list" data-testid="saved-events-list">
                                 {upcomingSaved.map((event) => (
                                     <EventSnapshotCard
                                         key={event.eventId}
@@ -176,7 +172,7 @@ export function ProfilePage() {
                         {pastSaved.length === 0 ? (
                             <p><i>No past saved events.</i></p>
                         ) : (
-                            <ul className="event-snapshot-list" data-testid="past-saved-events-list">
+                            <ul className="event-feed event-snapshot-list" data-testid="past-saved-events-list">
                                 {pastSaved.map((event) => (
                                     <EventSnapshotCard
                                         key={event.eventId}
@@ -193,7 +189,7 @@ export function ProfilePage() {
                         {upcomingBookings.length === 0 ? (
                             <p><i>No upcoming bookings.</i></p>
                         ) : (
-                            <ul className="event-snapshot-list" data-testid="bookings-list">
+                            <ul className="event-feed event-snapshot-list" data-testid="bookings-list">
                                 {upcomingBookings.map((booking) => (
                                     <EventSnapshotCard
                                         key={booking._id}
@@ -210,7 +206,7 @@ export function ProfilePage() {
                         {pastBookings.length === 0 ? (
                             <p><i>No past bookings.</i></p>
                         ) : (
-                            <ul className="event-snapshot-list" data-testid="past-bookings-list">
+                            <ul className="event-feed event-snapshot-list" data-testid="past-bookings-list">
                                 {pastBookings.map((booking) => (
                                     <EventSnapshotCard
                                         key={booking._id}
