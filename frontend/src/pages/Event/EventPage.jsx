@@ -46,7 +46,7 @@ export function EventPage() {
   const handleBuyTickets = async () => {
     // Redirect to login if not authenticated
     if (!session) {
-      navigate("/login");
+      setShowAuthPrompt(true);
       return;
     }
 
@@ -59,6 +59,7 @@ export function EventPage() {
       await addBooking(id);
       setBookingState("booked");
       setShowConfirmation(true);
+      return;
     } catch (err) {
       if (err.message === "already_booked") {
         setBookingState("already_booked");

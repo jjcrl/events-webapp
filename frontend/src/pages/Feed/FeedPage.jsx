@@ -17,7 +17,7 @@ export function FeedPage() {
   useEffect(() => {
     if (isPending) return;
     if (!session) {
-      setProfileLoading[false]
+      setProfileLoading(false)
       return;
     }
     getMyProfile()
