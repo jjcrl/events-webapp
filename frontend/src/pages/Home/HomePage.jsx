@@ -24,9 +24,13 @@ export function HomePage() {
         .then(({ profile }) => {
           const city = profile.homeLocation?.city;
           if (city) {
-            return getEvents({ city }).then((data) => {
-              setHomeEvents(data.events || []);
-            });
+           return getEvents({ city }).then((data) => {
+              const today = new Date();
+              const upcomingEvents = (data.events || []).filter((event) => {
+                return new Date(event.date) >= today;
+              });
+              setHomeEvents(upcomingEvents);
+              });
           }
         })
         .catch((err) => console.error("Profile/home events failed:", err));
