@@ -2,7 +2,7 @@ import EventCard from './EventCard/EventCard'
 import { useState, useEffect } from 'react'
 import { getEvents } from '@/services/events'
 
-function Recommendations({ profile }) {
+function Recommendations({ profile, isLoggedIn }) {
     const [events, setEvents] = useState([]);
     const [loading,setLoading] = useState(true)
     useEffect(() => {
@@ -93,6 +93,7 @@ function Recommendations({ profile }) {
                             event={event}
                             favouriteArtists={profile.favouriteArtists}
                             savedEvents={profile.savedEvents}
+                            isLoggedIn={isLoggedIn}
                         />
                     ))}
                 </div>
