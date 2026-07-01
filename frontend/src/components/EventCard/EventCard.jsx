@@ -12,7 +12,8 @@ function formatDate(dateString) {
 
 function formatTime(timeString) {
     if (!timeString) return "";
-    return timeString.slice(0, 5); // takes "19:00" from "19:00:00"
+    const [hours, minutes] = timeString.split(":");
+    return minutes !== undefined ? `${hours}:${minutes}` : hours;
 }
 
 export default function EventCard({ event, favouriteArtists, savedEvents, isLoggedIn }) {
