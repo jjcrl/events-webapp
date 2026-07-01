@@ -7,8 +7,17 @@ import Footer from "../../components/Footer";
 import NavBar from "../../components/NavBar";
 import { toggleFavouriteArtists, toggleSavedEvent } from "../../services/userProfile";
 import Map from "../../components/Map"
-
-
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { toast } from "sonner";
 import { Bookmark, UserPlus, Tag, MapPin } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -22,6 +31,9 @@ export function EventPage() {
   const [error, setError] = useState(null);
   const [bookingState, setBookingState] = useState("idle");
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [isArtistFaved, setIsArtistFaved] = useState(false);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const { data: session, isPending } = authClient.useSession();
 
   useEffect(() => {
@@ -71,20 +83,44 @@ export function EventPage() {
     e.stopPropagation();
     if (isPending) return;
     if (!session) {
-      navigate("/login");
+      setShowAuthPrompt(true);
       return;
     }
-    return toggleSavedEvent(event._id);
+
+    const wasSaved = isSaved;
+    try {
+      await toggleSavedEvent(event._id);
+      setIsSaved(!wasSaved);
+      toast.success(
+        wasSaved
+          ? `${event.name} removed from favourites`
+          : `${event.name} added to favourites`
+      );
+    } catch {
+      toast.error("Failed to update favourites");
+    }
   }
 
   async function handleSaveArtist(e) {
     e.stopPropagation();
     if (isPending) return;
     if (!session) {
-      navigate("/login");
+      setShowAuthPrompt(true);
       return;
     }
-    return toggleFavouriteArtists(event.artist);
+
+    const wasFaved = isArtistFaved;
+    try {
+      await toggleFavouriteArtists(event.artist);
+      setIsArtistFaved(!wasFaved);
+      toast.success(
+        wasFaved
+          ? `${event.artist} removed from favourite artists`
+          : `${event.artist} added to favourite artists`
+      );
+    } catch {
+      toast.error("Failed to update favourite artists");
+    }
   }
 
   const isButtonDisabled =
@@ -103,8 +139,6 @@ export function EventPage() {
   if (error) return <p>Error loading event</p>;
   if (!event) return <p>Event not found</p>;
 
-
-
   function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString("en-GB", {
       weekday: "short",
@@ -121,59 +155,68 @@ export function EventPage() {
   return (
     <>
       <NavBar />
-      {showConfirmation && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Booking confirmation"
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: "8px",
-              padding: "2rem",
-              maxWidth: "400px",
-              width: "90%",
-              textAlign: "center",
-            }}
-          >
-            {bookingState === "already_booked" ? (
-              <>
-                <h2>Already Booked</h2>
-                <p>You&apos;ve already booked tickets for <strong>{event.name}</strong>. Check your profile to view your bookings.</p>
-              </>
-            ) : (
-              <>
-                <h2>Booking Confirmed!</h2>
+      <Dialog open={showAuthPrompt} onOpenChange={setShowAuthPrompt}>
+        <DialogContent className="sm:max-w-[400px] text-center">
+          <DialogHeader>
+            <DialogTitle>Join EnCore</DialogTitle>
+            <DialogDescription>
+              Create an account to start following artists, saving events,
+              and booking tickets.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-col gap-2 sm:flex-col">
+            <Button onClick={() => navigate("/login")}>
+              Create Account
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/login")}>
+              I already have an account
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+        <DialogContent className="sm:max-w-[400px] text-center">
+          <DialogHeader>
+            <DialogTitle>
+              {bookingState === "already_booked"
+                ? "Already Booked"
+                : "Booking Confirmed!"}
+            </DialogTitle>
+            <DialogDescription asChild>
+              {bookingState === "already_booked" ? (
                 <p>
-                  <strong>{event.name}</strong> has been added to your bookings.
-                  You can view it on your{" "}
-                  <Link to="/profile">profile page</Link>.
+                  You&apos;ve already booked tickets for{" "}
+                  <strong>{event.name}</strong>. Check your profile to view
+                  your bookings.
                 </p>
-                <p>You&apos;re being redirected to Ticketmaster to complete your purchase.</p>
-              </>
-            )}
-            <button
+              ) : (
+                <div>
+                  <p>
+                    <strong>{event.name}</strong> has been added to your
+                    bookings. You can view it on your{" "}
+                    <Link to="/profile" className="underline text-primary">
+                      profile page
+                    </Link>
+                    .
+                  </p>
+                  <p className="mt-2">
+                    You&apos;re being redirected to Ticketmaster to complete
+                    your purchase.
+                  </p>
+                </div>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-center">
+            <Button
+              variant="outline"
               onClick={() => setShowConfirmation(false)}
-              style={{ marginTop: "1rem" }}
             >
               Close
-            </button>
-          </div>
-        </div>
-      )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="page items-start">
         <div className="event-mini sticky top-12 self-start">
@@ -210,8 +253,8 @@ export function EventPage() {
           )}
           <p className="text-2xl font-semibold text-primary">Event Details</p>
           <Separator />
-          {event.description.split(".").map((line)=>(
-            <p key={line[0]} className="text-l">{line}</p>        
+          {event.description.split(".").map((line) => (
+            <p key={line[0]} className="text-l">{line}</p>
           ))}
           <div className="flex flex-col gap-2 pb-5 pt-5 text-primary">
             <p className="text-2xl font-semibold text-primary">Venue</p>
