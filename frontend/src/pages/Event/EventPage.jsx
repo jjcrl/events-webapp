@@ -8,6 +8,12 @@ import NavBar from "../../components/NavBar";
 import { toggleFavouriteArtists, toggleSavedEvent } from "../../services/userProfile";
 import Map from "../../components/Map"
 
+
+import { Bookmark, UserPlus, Tag, MapPin } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator";
+
 export function EventPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -169,39 +175,55 @@ export function EventPage() {
         </div>
       )}
 
-      <div className="page">
-        <div className="event-mini">
-          <img src={event.images[0].url} />
-          <h2>{event.artist}</h2>
-          <button onClick={handleSaveArtist} disabled={isPending}>follow artist</button>
-          <button onClick={handleSaveToFavourites} disabled={isPending}>save event</button>
+      <div className="page items-start">
+        <div className="event-mini sticky top-12 self-start">
+          <img src={event.images[0].url} className="rounded object-cover" />
+          <p className="font-bold text-3xl text-primary">{event.artist}</p>
+          <div className="flex flex-row gap-3">
+            {[... new Set(event.tags)].map((t) => <p key={t} className="flex flex-row gap-1 font-bold m-0 text-primary"><Tag />{t}</p>)}
+          </div>
+          <Separator />
+          <div className="flex flex-row gap-2">
+            <Button onClick={handleSaveArtist} disabled={isPending}><UserPlus /></Button>
+            <Button onClick={handleSaveToFavourites} disabled={isPending}><Bookmark /></Button>
+          </div>
+
         </div>
         <div className="event-details">
-          <h1>{event.name}</h1>
-          <h2>{event.venue.name}</h2>
-          <h3>{formatDate(event.date)} {formatTime(event.time)}</h3>
-          <div className="tags">
-            {event.tags.map((t) => <h4>{t}</h4>)}
+          <p className="text-5xl font-medium">{event.name}</p>
+          <div className="flex flex-row gap-1">
+            <MapPin />
+            <p className="font-bold m-0 text-primary">{event.venue.name}</p>
           </div>
-          <button
-            onClick={handleBuyTickets}
-            disabled={isButtonDisabled}
-            aria-label="Buy Tickets"
-          >
-            {buttonLabel()}
-          </button>
-
+          <p className="font-semibold text-secondary">{formatDate(event.date)}, {formatTime(event.time)}</p>
+          <div className="py-2">
+            <Button
+              onClick={handleBuyTickets}
+              disabled={isButtonDisabled}
+              aria-label="Buy Tickets"
+            >
+              {buttonLabel()}
+            </Button>
+          </div>
           {bookingState === "error" && (
             <p role="alert">Something went wrong. Please try again.</p>
           )}
-          <h3>Info</h3>
-          <p>{event.description}</p>
-          <h3>Venue</h3>
-          <h2>{`Doors Open At: ${event.time}`}</h2>
-          <h2>{event.venue.name}</h2>
-          <h3>{event.venue.address}</h3>
-          <h3>{event.venue.postcode}</h3>
-          <Map className="map" events={[event]} height={"60vh"} width={"100%"} zoom={18} centre={{ lat: event.venue.location?.coordinates[1], lng: event.venue.location?.coordinates[0] }} />
+          <p className="text-2xl font-semibold text-primary">Event Details</p>
+          <Separator />
+          {event.description.split(".").map((line)=>(
+            <p key={line[0]} className="text-l">{line}</p>        
+          ))}
+          <div className="flex flex-col gap-2 pb-5 pt-5 text-primary">
+            <p className="text-2xl font-semibold text-primary">Venue</p>
+            <Separator />
+            <p>{`Doors Open At: ${event.time}`}</p>
+            <p>{event.venue.name}</p>
+            <p>{event.venue.address}</p>
+            <p>{event.venue.postcode}</p>
+          </div>
+          {event.venue.location &&
+            <Map className="map" events={[event]} height={"60vh"} width={"100%"} zoom={18} centre={{ lat: event.venue.location?.coordinates[1], lng: event.venue.location?.coordinates[0] }} />
+          }
         </div>
       </div>
       <Footer />

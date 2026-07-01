@@ -32,6 +32,10 @@ export function FeedPage() {
   return (
     <>
       <NavBar />
+      <div className="w-full h-fit bg-primary flex flex-col p-20 gap-5">
+      <p className="text-5xl text-muted font-bold">EVENTS</p>
+      <p className="text-2xl text-muted-foreground font-medium">Browse whats coming up, or follow artists for tailord picks.</p>
+      </div>
       {session && !profileLoading && <Recommendations profile={profile} />}
       <EventFeedSection profile={profile} isLoggedIn={!!session} />
       <Footer />

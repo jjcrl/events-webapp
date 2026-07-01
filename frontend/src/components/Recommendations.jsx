@@ -3,11 +3,8 @@ import { useState, useEffect } from 'react'
 import { getEvents } from '@/services/events'
 
 function Recommendations({ profile }) {
-console.log('profile:', profile)
-
     const [events, setEvents] = useState([]);
     const [loading,setLoading] = useState(true)
-
     useEffect(() => {
         if (!profile?.homeLocation?.city) return null;
         getEvents({
@@ -83,7 +80,7 @@ console.log('profile:', profile)
 
     return (
         < div className='foryou-banner'>
-            {/* <h2>Recommended for you</h2> */}
+            <p className='pl-26 text-3xl font-medium pb-10 text-muted-foreground'>Discover more events just for you.</p>
             {!hasActivity ? (
                 <p>Save events or follow artists to see personalised recommendations</p>
             ) : recommendedEvents.length === 0 ? (

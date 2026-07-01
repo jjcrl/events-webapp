@@ -1,6 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { toggleFavouriteArtists, toggleSavedEvent } from "../../services/userProfile";
-import { authClient } from "../../services/authentication";
+import { toggleSavedEvent } from "../../services/userProfile";
+
+import { Bookmark, BookMarked } from "lucide-react";
+
+import { Button } from "../ui/button";
 
 function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString("en-GB", {
@@ -10,19 +13,11 @@ function formatDate(dateString) {
     });
 }
 
-function formatTime(timeString) {
-    if (!timeString) return "";
-    const [hours, minutes] = timeString.split(":");
-    return minutes !== undefined ? `${hours}:${minutes}` : hours;
-}
 
 export default function EventCard({ event, favouriteArtists, savedEvents, isLoggedIn }) {
     const navigate = useNavigate();
-    // const { data: session, isPending } = authClient.useSession();
     if (!event) return null;
 
-    // check if this event's artist is already followed
-    const isFollowing = favouriteArtists.includes(event.artist);
     const isSaved = savedEvents.includes(event._id);
 
     function handleCardClick() {
@@ -55,44 +50,37 @@ export default function EventCard({ event, favouriteArtists, savedEvents, isLogg
 
     let sizes = pickEventCardImage(event.images)
 
-    return (
-        <div
-            className="event-card"
-            onClick={handleCardClick}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => e.key === "Enter" && handleCardClick()}
-            data-testid="event-card"
-        >
-            <div className="card-image-wrap">
-                {event.images && (
-                    <img
-                        src={sizes.url}
-                        alt={`${event.name} image`}
-                        className="event-image"
-                    />
-                )}
-                <button
-                    className="save-event-btn"
-                    data-testid="save-event-btn"
-                    onClick={handleSaveToFavourites}
-                    aria-label={isSaved ? "Remove from saved events" : "Save event"}
-                    title={isSaved ? "Remove from saved events" : "Save event"}
-                >
-                    {isSaved ? "♥" : "♡"}
-                </button>
-
-            </div>
-
-            <div className="event_body">
-                <p className="event_title">{event.name}</p>
-                <p className="event_datetime">
-                    {formatDate(event.date)}
-                </p>
-                <p className="event_location">
-                    {event.venue?.name ? `${event.venue.name}` : ""}
-                </p>
-            </div>
+  return (
+    <div
+        className="event-card"
+        onClick={handleCardClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === "Enter" && handleCardClick()}
+        data-testid="event-card"
+    >
+        <div className="relative">
+            {event.images && (
+                <img
+                    src={sizes.url}
+                    alt={`${event.name} image`}
+                    className="w-full rounded aspect-square object-cover object-center"
+                />
+            )}
+            <Button
+                variant="default"
+                size="icon"
+                onClick={handleSaveToFavourites}
+                className="absolute bottom-2 right-2"
+            >
+                <Bookmark />
+            </Button>
         </div>
-    );
+        <div className="event_body">
+            <p className="font-bold text-l text--primary">{event.name}</p>
+            <p className="text-sm text-secondary">{formatDate(event.date)} </p>
+            <p className="text-sm text-primary">{event.venue?.name ? `${event.venue.name}` : ""}</p>
+        </div>
+    </div>
+);
 }
