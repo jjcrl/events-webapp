@@ -4,6 +4,9 @@ import { getEvents, getCities } from "../services/events"
 import EventFeed from "./EventFeed"
 import EventFilters from "./EventFilters"
 import { useNavigate } from "react-router-dom"
+import { MapPinned } from "lucide-react"
+import { format } from "date-fns"
+
 import {
   Pagination,
   PaginationContent,
@@ -21,9 +24,9 @@ function EventFeedSection({ profile , isLoggedIn}) {
   const [cities, setCities] = useState([])
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
-  const city = searchParams.get("city") || profile?.homeLocation?.city ||"Manchester"
+
+  const city = searchParams.get("city") || profile?.homeLocation?.city || "Manchester"
   const from = searchParams.get("from") || ""
-  // const from = searchParams.get("from") || new Date()
   const to = searchParams.get("to") || ""
   const tag = searchParams.get("tag") || ""
   const [currentPageNum, setCurrentPageNum] = useState(1)
@@ -31,11 +34,16 @@ function EventFeedSection({ profile , isLoggedIn}) {
   const LIMIT = 10
   const offset = (currentPageNum - 1) * LIMIT
 
-  function updateParam(key, value) {
-    const nextParams = new URLSearchParams(searchParams)
-    if (value) nextParams.set(key, value)
-    else nextParams.delete(key)
-    setSearchParams(nextParams)
+
+  function updateParam(updates) {
+    setSearchParams((prev) => {
+      const nextParams = new URLSearchParams(prev)
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value) nextParams.set(key, value)
+        else nextParams.delete(key)
+      })
+      return nextParams
+    })
   }
 
   useEffect(() => {
@@ -45,9 +53,10 @@ function EventFeedSection({ profile , isLoggedIn}) {
   }, [])
 
   useEffect(() => {
-    getEvents({ city, from, to, limit: LIMIT, offset, tag })
+
+    getEvents({ city, from: format(new Date(), "yyyy-MM-dd"), to, limit: LIMIT, offset, tag })
       .then((data) => {
-        console.log(data)
+        
         setEvents(data.events)
         setTotalEvents(data.totalEvents)
       })
@@ -102,8 +111,14 @@ function EventFeedSection({ profile , isLoggedIn}) {
         topTags={topTags}
         onChange={updateParam}
       />
-      <h1 className="events-title">{`Popular events in ${city}`}  <button onClick={(() => (navigate("/explore")))}>explore</button> </h1>
+      <div className="flex flex-row gap-5 items-center">
 
+        <div className="flex flex-row gap-2 items-center py-3">
+          <p className="text-primary font-semibold text-5xl py-2">{`Popular Events`}</p>
+          <p className="text-secondary font-semibold text-5xl py-2">{`in ${city}`}</p>
+        </div>
+        <MapPinned className="text-secondary translate-y-0.5" size={36} onClick={(() => (navigate("/explore")))} />
+      </div>
       <EventFeed
         events={filteredEvents}
         favouriteArtists={profile?.favouriteArtists || []}

@@ -17,7 +17,7 @@ export function FeedPage() {
   useEffect(() => {
     if (isPending) return;
     if (!session) {
-      setProfileLoading[false]
+      setProfileLoading(false)
       return;
     }
     getMyProfile()
@@ -38,13 +38,11 @@ export function FeedPage() {
   return (
     <>
       <NavBar />
-      {session && !profileLoading && <Recommendations profile={profile} />}
-      {session && !profileLoading && profile &&
-        <HomeLocationUpdateDialog 
-          profile={profile}           
-          setNewHomeLocation={setNewHomeLocation}
-        />
-      }
+      <div className="w-full h-fit bg-primary flex flex-col p-20 gap-5">
+      <p className="text-5xl text-muted font-bold">EVENTS</p>
+      <p className="text-2xl text-muted-foreground font-medium">Browse whats coming up, or follow artists for tailord picks.</p>
+      </div>
+      {session && !profileLoading && <Recommendations profile={profile} isLoggedIn={!!session} />}
       <EventFeedSection profile={profile} isLoggedIn={!!session} />
       <Footer />
     </>

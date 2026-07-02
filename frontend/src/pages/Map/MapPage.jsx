@@ -13,7 +13,7 @@ export function MapPage(props) {
             .then((d) => setEvents(d.events))
             .catch((e) => console.log(e))
             .finally(() => setLoading(false))
-    },)
+    },[])
 
 
     return (

@@ -1,6 +1,19 @@
 import { useNavigate } from "react-router-dom";
-import { toggleFavouriteArtists, toggleSavedEvent } from "../../services/userProfile";
-import { authClient } from "../../services/authentication";
+import { toggleSavedEvent } from "../../services/userProfile";
+import { Bookmark } from "lucide-react";
+import { Button } from "../ui/button";
+import { useState } from "react";
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { toast } from "sonner";
 
 function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString("en-GB", {
@@ -10,38 +23,38 @@ function formatDate(dateString) {
     });
 }
 
-function formatTime(timeString) {
-    if (!timeString) return "";
-    const [hours, minutes] = timeString.split(":");
-    return minutes !== undefined ? `${hours}:${minutes}` : hours;
-}
-
-export default function EventCard({ event, favouriteArtists, savedEvents, isLoggedIn }) {
+export default function EventCard({ event, isLoggedIn, savedEvents }) {
     const navigate = useNavigate();
-    // const { data: session, isPending } = authClient.useSession();
-    if (!event) return null;
-
-    // check if this event's artist is already followed
-    const isFollowing = favouriteArtists.includes(event.artist);
-    const isSaved = savedEvents.includes(event._id);
+    const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
 
     function handleCardClick() {
         navigate(`/events/${event._id}`);
     }
 
     async function handleSaveToFavourites(e) {
-        e.stopPropagation(); // Handles the click on the button without triggering other click handlers
+        e.stopPropagation();
         if (!isLoggedIn) {
-            navigate("/login");
+            setShowAuthPrompt(true);
             return;
         }
-        await toggleSavedEvent(event._id);
+        const wasSaved = isSaved;
+        try {
+            await toggleSavedEvent(event._id);
+            setIsSaved(!wasSaved);
+            toast.success(
+                wasSaved
+                    ? `${event.name} removed from favourites`
+                    : `${event.name} added to favourites`
+            );
+        } catch {
+            toast.error("Failed to update favourites");
+        }
     }
 
     function pickEventCardImage(images) {
         const targetRatio = 16 / 9;
         const minWidth = 640; // covers most card sizes at 2x density
-
         const sixteenNine = images
             .filter(img => Math.abs(img.width / img.height - targetRatio) < 0.05)
             .sort((a, b) => a.width - b.width);
@@ -52,9 +65,8 @@ export default function EventCard({ event, favouriteArtists, savedEvents, isLogg
             ?? images.sort((a, b) => b.width - a.width)[0]
         );
     }
-
     let sizes = pickEventCardImage(event.images)
-
+    if (!event) return null;
     return (
         <div
             className="event-card"
@@ -64,34 +76,46 @@ export default function EventCard({ event, favouriteArtists, savedEvents, isLogg
             onKeyDown={(e) => e.key === "Enter" && handleCardClick()}
             data-testid="event-card"
         >
-            <div className="card-image-wrap">
+            <Dialog open={showAuthPrompt} onOpenChange={setShowAuthPrompt}>
+                <DialogContent className="sm:max-w-[400px] text-center">
+                    <DialogHeader>
+                        <DialogTitle>Join EnCore</DialogTitle>
+                        <DialogDescription>
+                            Create an account to start following artists, saving events,
+                            and booking tickets.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="flex flex-col gap-2 sm:flex-col">
+                        <Button onClick={() => navigate("/login")}>
+                            Create Account
+                        </Button>
+                        <Button variant="outline" onClick={() => navigate("/login")}>
+                            I already have an account
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+            <div className="relative">
                 {event.images && (
                     <img
                         src={sizes.url}
                         alt={`${event.name} image`}
-                        className="event-image"
+                        className="w-full rounded aspect-square object-cover object-center"
                     />
                 )}
-                <button
-                    className="save-event-btn"
-                    data-testid="save-event-btn"
+                <Button
+                    variant="default"
+                    size="icon"
                     onClick={handleSaveToFavourites}
-                    aria-label={isSaved ? "Remove from saved events" : "Save event"}
-                    title={isSaved ? "Remove from saved events" : "Save event"}
+                    className="absolute bottom-2 right-2"
                 >
-                    {isSaved ? "♥" : "♡"}
-                </button>
-
+                    <Bookmark />
+                </Button>
             </div>
-
             <div className="event_body">
-                <p className="event_title">{event.name}</p>
-                <p className="event_datetime">
-                    {formatDate(event.date)}
-                </p>
-                <p className="event_location">
-                    {event.venue?.name ? `${event.venue.name}` : ""}
-                </p>
+                <p className="font-bold text-l text--primary">{event.name}</p>
+                <p className="text-sm text-secondary">{formatDate(event.date)} </p>
+                <p className="text-sm text-primary">{event.venue?.name ? `${event.venue.name}` : ""}</p>
             </div>
         </div>
     );

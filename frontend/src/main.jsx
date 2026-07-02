@@ -1,6 +1,6 @@
 import ReactDOM from "react-dom/client";
 import React from "react";
-
+import { Toaster } from "@/components/ui/sonner";
 import App from "./App.jsx";
 import "./index.css";
 
@@ -10,6 +10,7 @@ const rootElement = document.getElementById("root");
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
+    <Toaster/>
     <App />
   </React.StrictMode>
 );
