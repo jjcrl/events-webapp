@@ -1,6 +1,6 @@
-## 🎵 "UPDATENAME" — Music Events Web App
+## 🎵 enCore — Music Events Web App
 
-"UPDATENAMEAPP" is a full-stack web application that lets users discover, save, and track live music events near them. Built by a team of 5 developers over two weeks at Makers Academy.
+enCore is a full-stack web application that lets users discover, save, and track live music events near them. Built by a team of 5 developers over two weeks at Makers Academy.
 
 ### What it does
 

@@ -6,7 +6,18 @@ import EventFilters from "./EventFilters"
 import { useNavigate } from "react-router-dom"
 import { MapPinned } from "lucide-react"
 import { format } from "date-fns"
-function EventFeedSection({ profile, isLoggedIn }) {
+
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
+
+
+function EventFeedSection({ profile , isLoggedIn}) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [events, setEvents] = useState([])
   const [eventsError, setEventsError] = useState()
@@ -18,6 +29,10 @@ function EventFeedSection({ profile, isLoggedIn }) {
   const from = searchParams.get("from") || ""
   const to = searchParams.get("to") || ""
   const tag = searchParams.get("tag") || ""
+  const [currentPageNum, setCurrentPageNum] = useState(1)
+  const [totalEvents, setTotalEvents] = useState(0)
+  const LIMIT = 10
+  const offset = (currentPageNum - 1) * LIMIT
 
 
   function updateParam(updates) {
@@ -38,11 +53,23 @@ function EventFeedSection({ profile, isLoggedIn }) {
   }, [])
 
   useEffect(() => {
-    getEvents({ city, from: format(new Date(), "yyyy-MM-dd"), to })
-      .then((data) => setEvents(data.events))
+
+    getEvents({ city, from: format(new Date(), "yyyy-MM-dd"), to, limit: LIMIT, offset, tag })
+      .then((data) => {
+        
+        setEvents(data.events)
+        setTotalEvents(data.totalEvents)
+      })
       .catch((err) => setEventsError(err))
       .finally(() => setLoading(false))
-  }, [city])
+  }, [city, from, to, offset, tag])
+
+
+  
+  // resets the current page when any of the filters change
+  useEffect(() => {
+    setCurrentPageNum(1);
+  }, [city, tag, from, to]);
 
   const topTags = useMemo(() => {
     const counts = {}
@@ -69,6 +96,10 @@ function EventFeedSection({ profile, isLoggedIn }) {
 
   if (loading) return <p>Loading events...</p>
 
+  const totalPages = Math.ceil(totalEvents / LIMIT);
+  const hasNextPage = currentPageNum < totalPages;
+  const hasPrevPage = currentPageNum > 1;
+
   return (
     <div className="centre">
       <EventFilters
@@ -94,6 +125,38 @@ function EventFeedSection({ profile, isLoggedIn }) {
         savedEvents={profile?.savedEvents || []}
         isLoggedIn={isLoggedIn}
       />
+      <Pagination>
+        <PaginationContent>
+          {hasPrevPage && (
+            <PaginationItem>
+              <PaginationPrevious 
+                onClick={() => {
+                  const isFirstPage = currentPageNum <= 1;
+                  if (isFirstPage) return;
+
+                  setCurrentPageNum(currentPageNum - 1);
+                }} 
+              />
+            </PaginationItem>
+          )}
+  
+          {hasNextPage && (
+            <PaginationItem>
+              <PaginationNext 
+                onClick={() => {
+                  const isLastPage = currentPageNum >= totalPages;
+                  console.log(currentPageNum)
+                  if (isLastPage) return;
+
+                  setCurrentPageNum(currentPageNum + 1);
+                }}
+              />
+            </PaginationItem>
+          )}
+
+
+        </PaginationContent>
+      </Pagination>
     </div>
   )
 }

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react"
 import { authClient } from "../../services/authentication"
 import { getMyProfile } from "../../services/userProfile"
-
 import NavBar from "../../components/NavBar"
 import Recommendations from "../../components/Recommendations"
 import EventFeedSection from "../../components/EventFeedSection"
@@ -13,6 +12,7 @@ export function FeedPage() {
   const [profile, setProfile] = useState(null)
   // const [loading, setLoading] = useState(true)
   const [profileLoading, setProfileLoading] = useState(true)
+
 
   useEffect(() => {
     if (isPending) return;
@@ -34,7 +34,6 @@ export function FeedPage() {
     const { profile } = await getMyProfile();
     setProfile(profile);
   }
-
 
   return (
     <>

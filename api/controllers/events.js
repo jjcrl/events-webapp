@@ -14,7 +14,13 @@ const getCities = async (req, res) => {
 const getEvents = async (req, res) => {
     try {
         // query parameters 
-        const { city, from, to } = req.query
+        const { city, from, to, limit, offset, tag } = req.query
+
+        const LIMIT = 10
+        const OFFSET = 0
+
+        const parsedLimit = limit ? Number(limit) : LIMIT
+        const parsedOffset = offset ? Number(offset) : OFFSET
         // if there is a city given
         if (city) {
             try {
@@ -37,9 +43,14 @@ const getEvents = async (req, res) => {
                 filter.date.$lte = endOfDay
             }
         }
+        if (tag) filter.tags = tag
+        const totalEvents = await Event.countDocuments(filter)
         // find the events with matches
-        const events = await Event.find(filter).sort({ date: 1 })
-        return res.status(200).json({ events })
+        const events = await Event.find(filter).sort({ date: 1 }).skip(parsedOffset).limit(parsedLimit)
+        return res.status(200).json({ 
+            events, 
+            totalEvents
+        })
     } catch (err) {
         console.error("getEvents error:", err)
         return res.status(500).json({ error: "Failed to fetch events" })
