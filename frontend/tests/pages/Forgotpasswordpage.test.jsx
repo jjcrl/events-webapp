@@ -61,7 +61,30 @@ describe("ForgotPasswordPage", () => {
         });
     });
 
-    test("shows the 'check your email' message once the request succeeds", async () => {
+    test("shows a brief 'checking' state before we know whether a dev reset link is available", async () => {
+        authClient.requestPasswordReset.mockResolvedValue({ error: null });
+        let resolveFetch;
+        fetch.mockImplementation(
+            () => new Promise((resolve) => { resolveFetch = resolve; })
+        );
+        const user = userEvent.setup();
+
+        renderPage();
+        await fillAndSubmit(user);
+
+        expect(await screen.findByText(/checking for a reset link/i)).toBeInTheDocument();
+        expect(
+            screen.queryByText(/we've sent a link to reset your password/i)
+        ).not.toBeInTheDocument();
+
+        resolveFetch({ ok: true, json: async () => ({ url: null }) });
+
+        await waitFor(() =>
+            expect(screen.queryByText(/checking for a reset link/i)).not.toBeInTheDocument()
+        );
+    });
+
+    test("shows the 'check your email' message once the request succeeds and no dev link is available", async () => {
         authClient.requestPasswordReset.mockResolvedValue({ error: null });
         fetch.mockResolvedValue({ ok: true, json: async () => ({ url: null }) });
         const user = userEvent.setup();
@@ -73,6 +96,7 @@ describe("ForgotPasswordPage", () => {
             await screen.findByText(/we've sent a link to reset your password/i)
         ).toBeInTheDocument();
         expect(screen.getByText("maria@test.com")).toBeInTheDocument();
+        expect(screen.queryByTestId("dev-reset-link-panel")).not.toBeInTheDocument();
     });
 
     test("shows an error message and does not proceed when the request fails", async () => {
@@ -89,7 +113,7 @@ describe("ForgotPasswordPage", () => {
         expect(fetch).not.toHaveBeenCalled();
     });
 
-    test("fetches the dev reset link and shows it in a pop-up instead of only logging it", async () => {
+    test("fetches the dev reset link and shows it inline, ready to copy, instead of only logging it", async () => {
         authClient.requestPasswordReset.mockResolvedValue({ error: null });
         fetch.mockResolvedValue({
             ok: true,
@@ -102,10 +126,32 @@ describe("ForgotPasswordPage", () => {
 
         expect(fetch).toHaveBeenCalledWith(`${BACKEND_URL}/dev/reset-link`);
 
-        const dialog = await screen.findByRole("dialog", { name: /development reset link/i });
-        expect(dialog).toHaveTextContent(
+        const panel = await screen.findByTestId("dev-reset-link-panel");
+        expect(panel).toHaveTextContent("Your reset link is ready");
+        expect(panel).toHaveTextContent(
             "http://localhost:3000/api/auth/reset-password/abc123?callbackURL=xyz"
         );
+        expect(
+            screen.queryByText(/we've sent a link to reset your password/i)
+        ).not.toBeInTheDocument();
+    });
+
+    test("the reset link panel stays on screen — there's no close/dismiss control to lose it behind", async () => {
+        authClient.requestPasswordReset.mockResolvedValue({ error: null });
+        fetch.mockResolvedValue({
+            ok: true,
+            json: async () => ({ url: "http://localhost:3000/api/auth/reset-password/abc123?callbackURL=xyz" }),
+        });
+        const user = userEvent.setup();
+
+        renderPage();
+        await fillAndSubmit(user);
+
+        await screen.findByTestId("dev-reset-link-panel");
+
+        expect(screen.queryByRole("button", { name: /close/i })).not.toBeInTheDocument();
+        expect(screen.getByTestId("dev-reset-link-panel")).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: /back to log in/i })).toBeInTheDocument();
     });
 
     test("copying the link writes it to the clipboard and shows confirmation", async () => {
@@ -129,26 +175,7 @@ describe("ForgotPasswordPage", () => {
         expect(await screen.findByRole("button", { name: /copied!/i })).toBeInTheDocument();
     });
 
-    test("closing the pop-up removes it from the screen", async () => {
-        authClient.requestPasswordReset.mockResolvedValue({ error: null });
-        fetch.mockResolvedValue({
-            ok: true,
-            json: async () => ({ url: "http://localhost:3000/api/auth/reset-password/abc123?callbackURL=xyz" }),
-        });
-        const user = userEvent.setup();
-
-        renderPage();
-        await fillAndSubmit(user);
-
-        await screen.findByRole("dialog", { name: /development reset link/i });
-        await user.click(screen.getByRole("button", { name: "Close" }));
-
-        expect(
-            screen.queryByRole("dialog", { name: /development reset link/i })
-        ).not.toBeInTheDocument();
-    });
-
-    test("does not show a pop-up and does not crash if no dev link is available yet", async () => {
+    test("falls back to the generic 'check your email' message if no dev link is available", async () => {
         authClient.requestPasswordReset.mockResolvedValue({ error: null });
         fetch.mockResolvedValue({ ok: true, json: async () => ({ url: null }) });
         const user = userEvent.setup();
@@ -157,9 +184,7 @@ describe("ForgotPasswordPage", () => {
         await fillAndSubmit(user);
 
         await screen.findByText(/we've sent a link to reset your password/i);
-        expect(
-            screen.queryByRole("dialog", { name: /development reset link/i })
-        ).not.toBeInTheDocument();
+        expect(screen.queryByTestId("dev-reset-link-panel")).not.toBeInTheDocument();
     });
 
     test("does not crash if the dev-link fetch itself fails", async () => {
@@ -173,8 +198,6 @@ describe("ForgotPasswordPage", () => {
         expect(
             await screen.findByText(/we've sent a link to reset your password/i)
         ).toBeInTheDocument();
-        expect(
-            screen.queryByRole("dialog", { name: /development reset link/i })
-        ).not.toBeInTheDocument();
+        expect(screen.queryByTestId("dev-reset-link-panel")).not.toBeInTheDocument();
     });
 });
