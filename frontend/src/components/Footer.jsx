@@ -1,4 +1,6 @@
 import "./ui/Footer.css";
+import logo from "../assets/logo-secondary.svg"
+
 const teamMembers = [
   { name: "Joe Carroll", github: "https://github.com/jjcrl" },
   { name: "Kit Trowbridge", github: "https://github.com/Kit-Trowbridge" },
@@ -21,8 +23,9 @@ function Footer() {
         🌍 Project Repository
       </a>
       <div className="footer-brand">
-        <span className="footer-logo">En<span>Core</span></span>
-        <p>© 2026 EnCore. Built at Makers Academy</p>
+        {/* <span className="footer-logo">En<span>Core</span></span> */}
+        <img src={logo} alt="enCore Logo" className="h-16"/>
+        <p>© 2026 enCore. Built at Makers Academy</p>
       </div>
 
       <div className="footer-team">
